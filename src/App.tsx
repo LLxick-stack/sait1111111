@@ -63,7 +63,7 @@ export default function App() {
   const [letterStates, setLetterStates] = useState<Record<string, LetterState>>({});
   const [revealingRow, setRevealingRow] = useState<number>(-1);
   const [isRevealing, setIsRevealing] = useState(false);
-  const [hintUsed, setHintUsed] = useState(false);
+  const [revealedHints, setRevealedHints] = useState<Record<number, string>>({});
   const messageTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleLoadingDone = useCallback(() => {
@@ -249,7 +249,7 @@ export default function App() {
     setRevealingRow(-1);
     setIsRevealing(false);
     setMessage("");
-    setHintUsed(false);
+    setRevealedHints({});
   }, []);
 
   // Reveal a random unrevealed letter as a hint after watching an ad
@@ -261,11 +261,13 @@ export default function App() {
       guesses.forEach(g => {
         g.letters.forEach((l, i) => { if (l.state === "correct") knownCorrect.add(i); });
       });
+      // also exclude already hinted positions
+      Object.keys(revealedHints).forEach(k => knownCorrect.add(Number(k)));
       const unknown = [...targetWord].map((_, i) => i).filter(i => !knownCorrect.has(i));
       if (unknown.length === 0) return;
       const idx = unknown[Math.floor(Math.random() * unknown.length)];
       const letter = [...targetWord][idx];
-      showToast(`Подсказка: буква ${letter.toUpperCase()} на позиции ${idx + 1}`, 4000);
+      setRevealedHints(prev => ({ ...prev, [idx]: letter }));
     };
 
     if (window.ysdk) {
@@ -278,7 +280,7 @@ export default function App() {
     } else {
       revealHint();
     }
-  }, [gameStatus, guesses, targetWord, showToast]);
+  }, [gameStatus, guesses, targetWord, revealedHints, showToast]);
 
   return (
     <div className="min-h-screen bg-[#121213] flex flex-col items-center text-white select-none touch-manipulation">
@@ -304,22 +306,17 @@ export default function App() {
           wordLength={WORD_LENGTH}
           shake={shake}
           revealRow={revealingRow}
+          revealedHints={revealedHints}
         />
 
         {/* Hint button */}
         {gameStatus === "playing" && (
           <button
             onClick={handleHint}
-            disabled={hintUsed}
-            title={hintUsed ? "Подсказка уже использована" : "Посмотреть рекламу и получить подсказку"}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all
-              ${hintUsed
-                ? "bg-[#252526] text-gray-600 cursor-not-allowed"
-                : "bg-[#252526] hover:bg-[#2f2f30] active:scale-95 text-gray-300"
-              }`}
+            title="Посмотреть рекламу и получить подсказку"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all bg-[#252526] hover:bg-[#2f2f30] active:scale-95 text-gray-300"
           >
-            <span>💡</span>
-            <span>{hintUsed ? "Подсказка использована" : "Подсказка за рекламу"}</span>
+            Подсказка за рекламу
           </button>
         )}
 

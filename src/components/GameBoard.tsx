@@ -8,6 +8,7 @@ interface GameBoardProps {
   wordLength: number;
   shake: boolean;
   revealRow: number;
+  revealedHints?: Record<number, string>;
 }
 
 function getColorClass(state: LetterState): string {
@@ -78,6 +79,7 @@ export default function GameBoard({
   wordLength,
   shake,
   revealRow,
+  revealedHints = {},
 }: GameBoardProps) {
   const rows = [];
 
@@ -119,6 +121,7 @@ export default function GameBoard({
           .fill(null)
           .map((_, j) => {
             const char = currentChars[j] || "";
+            const hint = !char && revealedHints[j];
             const hasChar = char !== "";
             return (
               <div
@@ -130,12 +133,14 @@ export default function GameBoard({
                   transition-all duration-75
                   ${hasChar
                     ? "border-gray-400 bg-transparent text-white"
+                    : hint
+                    ? "border-[#538d4e] bg-[#538d4e]/20 text-[#538d4e]"
                     : "border-gray-700 bg-transparent text-white"
                   }
                 `}
                 style={hasChar ? { animation: "popIn 0.08s ease-out forwards" } : {}}
               >
-                {char}
+                {char || (hint ? hint.toUpperCase() : "")}
               </div>
             );
           })}
@@ -150,12 +155,21 @@ export default function GameBoard({
       <div key={`empty-${i}`} className="flex gap-[5px]">
         {Array(wordLength)
           .fill(null)
-          .map((_, j) => (
-            <div
-              key={j}
-              className="w-14 h-14 flex items-center justify-center border-2 border-gray-700 rounded bg-transparent"
-            />
-          ))}
+          .map((_, j) => {
+            const hint = revealedHints[j];
+            return (
+              <div
+                key={j}
+                className={`w-14 h-14 flex items-center justify-center border-2 rounded text-2xl font-bold uppercase
+                  ${hint
+                    ? "border-[#538d4e] bg-[#538d4e]/20 text-[#538d4e]"
+                    : "border-gray-700 bg-transparent text-white"
+                  }`}
+              >
+                {hint ? hint.toUpperCase() : ""}
+              </div>
+            );
+          })}
       </div>
     );
   }
