@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { GuessRow, LetterState } from "../App";
 
 interface GameBoardProps {
@@ -9,7 +10,7 @@ interface GameBoardProps {
   revealRow: number;
 }
 
-function getRevealedClass(state: LetterState): string {
+function getColorClass(state: LetterState): string {
   switch (state) {
     case "correct":
       return "border-[#538d4e] bg-[#538d4e] text-white";
@@ -20,6 +21,54 @@ function getRevealedClass(state: LetterState): string {
     default:
       return "border-gray-700 bg-transparent text-white";
   }
+}
+
+interface RevealTileProps {
+  char: string;
+  state: LetterState;
+  delay: number; // seconds
+}
+
+function RevealTile({ char, state, delay }: RevealTileProps) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    // Color appears at the halfway point of the flip
+    const colorDelay = (delay + 0.3) * 1000;
+    const timer = setTimeout(() => {
+      if (!el) return;
+      el.classList.remove("border-[#565758]", "bg-transparent");
+      switch (state) {
+        case "correct":
+          el.classList.add("bg-[#538d4e]", "border-[#538d4e]");
+          break;
+        case "present":
+          el.classList.add("bg-[#b59f3b]", "border-[#b59f3b]");
+          break;
+        case "absent":
+          el.classList.add("bg-[#3a3a3c]", "border-[#3a3a3c]");
+          break;
+      }
+    }, colorDelay);
+
+    return () => clearTimeout(timer);
+  }, [state, delay]);
+
+  return (
+    <div
+      ref={ref}
+      className="w-14 h-14 flex items-center justify-center text-2xl font-bold uppercase border-2 rounded border-[#565758] bg-transparent text-white"
+      style={{
+        animation: `flipReveal 0.6s ease forwards`,
+        animationDelay: `${delay}s`,
+      }}
+    >
+      {char}
+    </div>
+  );
 }
 
 export default function GameBoard({
@@ -42,27 +91,18 @@ export default function GameBoard({
         key={`guess-${i}`}
         className={`flex gap-[5px] ${shake && i === guesses.length - 1 ? "animate-shake" : ""}`}
       >
-        {guess.letters.map((letter, j) => (
-          <div
-            key={j}
-            className={`
-              w-14 h-14 flex items-center justify-center
-              text-2xl font-bold uppercase
-              border-2 rounded
-              ${getRevealedClass(letter.state)}
-            `}
-            style={
-              isRevealRow
-                ? {
-                    animation: `flipReveal 0.6s ease forwards`,
-                    animationDelay: `${j * 0.3}s`,
-                  }
-                : {}
-            }
-          >
-            {letter.char}
-          </div>
-        ))}
+        {guess.letters.map((letter, j) =>
+          isRevealRow ? (
+            <RevealTile key={j} char={letter.char} state={letter.state} delay={j * 0.3} />
+          ) : (
+            <div
+              key={j}
+              className={`w-14 h-14 flex items-center justify-center text-2xl font-bold uppercase border-2 rounded ${getColorClass(letter.state)}`}
+            >
+              {letter.char}
+            </div>
+          )
+        )}
       </div>
     );
   }

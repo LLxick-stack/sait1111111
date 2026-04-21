@@ -21,7 +21,7 @@ export default function HowToPlay({ onClose }: HowToPlayProps) {
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 animate-fade-in">
       <div className="bg-[#1a1a1b] border border-gray-700 rounded-2xl p-6 max-w-sm w-full shadow-2xl overflow-y-auto max-h-[90vh]">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-black text-white uppercase tracking-widest">Как играть</h2>
+          <h2 className="text-xl font-black text-white uppercase tracking-widest text-center flex-1">Как играть</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"/>
@@ -30,44 +30,44 @@ export default function HowToPlay({ onClose }: HowToPlayProps) {
           </button>
         </div>
 
-        <div className="text-gray-300 text-sm space-y-3 mb-5">
+        <div className="text-gray-300 text-sm space-y-3 mb-5 text-center">
           <p>Угадайте <strong className="text-white">ВОРДЛИ</strong> за 6 попыток.</p>
-          <ul className="space-y-1 list-disc list-inside">
+          <ul className="space-y-1 list-none">
             <li>Каждая попытка должна быть <strong className="text-white">настоящим словом</strong> из 5 букв.</li>
             <li>Цвет плиток меняется, подсказывая, насколько верна ваша попытка.</li>
           </ul>
         </div>
 
         <div className="border-t border-gray-700 pt-4 space-y-5">
-          <div>
+          <div className="flex flex-col items-center">
             <div className="flex gap-1.5 mb-2">
               {["к", "о", "ш", "к", "а"].map((c, i) => (
                 <ExampleTile key={i} char={c} color={i === 0 ? "correct" : "empty"} />
               ))}
             </div>
-            <p className="text-gray-400 text-xs">
+            <p className="text-gray-400 text-xs text-center">
               Буква <strong className="text-white">К</strong> стоит на <strong className="text-[#538d4e]">правильном месте</strong>.
             </p>
           </div>
 
-          <div>
+          <div className="flex flex-col items-center">
             <div className="flex gap-1.5 mb-2">
               {["с", "л", "о", "в", "о"].map((c, i) => (
                 <ExampleTile key={i} char={c} color={i === 2 ? "present" : "empty"} />
               ))}
             </div>
-            <p className="text-gray-400 text-xs">
+            <p className="text-gray-400 text-xs text-center">
               Буква <strong className="text-white">О</strong> есть в слове, но <strong className="text-[#b59f3b]">не на этом месте</strong>.
             </p>
           </div>
 
-          <div>
+          <div className="flex flex-col items-center">
             <div className="flex gap-1.5 mb-2">
               {["г", "р", "о", "з", "а"].map((c, i) => (
                 <ExampleTile key={i} char={c} color={i === 3 ? "absent" : "empty"} />
               ))}
             </div>
-            <p className="text-gray-400 text-xs">
+            <p className="text-gray-400 text-xs text-center">
               Буквы <strong className="text-white">З</strong> <strong className="text-white">нет</strong> в слове ни на одном месте.
             </p>
           </div>
