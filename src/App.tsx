@@ -6,12 +6,12 @@ import Modal from "./components/Modal";
 import Header from "./components/Header";
 import HowToPlay from "./components/HowToPlay";
 import LoadingScreen from "./components/LoadingScreen";
+import Settings from "./components/Settings";
+import { useAudio, AudioSettings } from "./utils/useAudio";
 
 declare global {
   interface Window {
-    YaGames: {
-      init: () => Promise<YaSDK>;
-    };
+    YaGames: { init: () => Promise<YaSDK> };
     ysdk: YaSDK | null;
   }
 }
@@ -40,11 +40,7 @@ interface YaLeaderboards {
       rank: number;
       player: { publicName: string; getAvatarSrc: (size: string) => string };
     }>;
-    userEntry?: {
-      score: number;
-      rank: number;
-      player: { publicName: string };
-    };
+    userEntry?: { score: number; rank: number; player: { publicName: string } };
   }>;
 }
 
@@ -60,14 +56,17 @@ const MAX_GUESSES = 6;
 function initYandexSDK() {
   if (typeof window !== "undefined" && window.YaGames) {
     window.YaGames.init()
-      .then((sdk) => {
-        window.ysdk = sdk;
-        console.log("Yandex Games SDK initialized");
-      })
-      .catch(() => {
-        console.warn("Yandex SDK not available");
-      });
+      .then((sdk) => { window.ysdk = sdk; })
+      .catch(() => { console.warn("Yandex SDK not available"); });
   }
+}
+
+function loadSettings(): AudioSettings {
+  try {
+    const raw = localStorage.getItem("wordle_settings");
+    if (raw) return JSON.parse(raw) as AudioSettings;
+  } catch { /* ignore */ }
+  return { soundEnabled: true, musicEnabled: false };
 }
 
 export default function App() {
@@ -80,13 +79,13 @@ export default function App() {
   const [showHowToPlay, setShowHowToPlay] = useState(false);
   const [interactiveHowToPlay, setInteractiveHowToPlay] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [message, setMessage] = useState<string>("");
+  const [showSettings, setShowSettings] = useState(false);
   const [letterStates, setLetterStates] = useState<Record<string, LetterState>>({});
   const [revealingRow, setRevealingRow] = useState<number>(-1);
   const [isRevealing, setIsRevealing] = useState(false);
   const [revealedHints, setRevealedHints] = useState<Record<number, string>>({});
-  // Snapshot of the finished game — frozen when modal opens, never changes until next game ends
   const [finishedGame, setFinishedGame] = useState<{ word: string; guessCount: number; status: "won" | "lost" } | null>(null);
+  const [audioSettings, setAudioSettings] = useState<AudioSettings>(loadSettings);
   const messageTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleLoadingDone = useCallback(() => {
@@ -99,14 +98,10 @@ export default function App() {
     }
   }, []);
 
-  useEffect(() => {
-    initYandexSDK();
-  }, []);
+  useEffect(() => { initYandexSDK(); }, []);
 
-  const showToast = useCallback((msg: string, duration = 2000) => {
-    setMessage(msg);
-    if (messageTimer.current) clearTimeout(messageTimer.current);
-    messageTimer.current = setTimeout(() => setMessage(""), duration);
+  const showToast = useCallback((_msg: string, _duration = 2000) => {
+    // toasts removed
   }, []);
 
   const evaluateGuess = useCallback(
@@ -114,12 +109,9 @@ export default function App() {
       const result: { char: string; state: LetterState }[] = Array(WORD_LENGTH)
         .fill(null)
         .map((_, i) => ({ char: guess[i], state: "absent" as LetterState }));
-
       const targetArr = [...targetWord];
       const usedTarget = Array(WORD_LENGTH).fill(false);
       const usedGuess = Array(WORD_LENGTH).fill(false);
-
-      // First pass: correct positions
       for (let i = 0; i < WORD_LENGTH; i++) {
         if (guess[i] === targetArr[i]) {
           result[i].state = "correct";
@@ -127,8 +119,6 @@ export default function App() {
           usedGuess[i] = true;
         }
       }
-
-      // Second pass: present but wrong position
       for (let i = 0; i < WORD_LENGTH; i++) {
         if (usedGuess[i]) continue;
         for (let j = 0; j < WORD_LENGTH; j++) {
@@ -139,7 +129,6 @@ export default function App() {
           }
         }
       }
-
       return result;
     },
     [targetWord]
@@ -150,26 +139,26 @@ export default function App() {
     const guess = currentInput.toLowerCase();
 
     if ([...guess].length !== WORD_LENGTH) {
+      audio.playInvalidWord();
       setShake(true);
       setTimeout(() => setShake(false), 600);
       return;
     }
-
     if (!/^[а-яё]{5}$/.test(guess)) {
+      audio.playInvalidWord();
       setShake(true);
       setTimeout(() => setShake(false), 600);
       return;
     }
-
     if (!isValidGuess(guess)) {
+      audio.playInvalidWord();
       setShake(true);
       setTimeout(() => setShake(false), 600);
       return;
     }
 
     const evaluated = evaluateGuess(guess);
-    const newGuess: GuessRow = { letters: evaluated };
-    const newGuesses = [...guesses, newGuess];
+    const newGuesses = [...guesses, { letters: evaluated }];
     const rowIdx = newGuesses.length - 1;
 
     setGuesses(newGuesses);
@@ -177,21 +166,17 @@ export default function App() {
     setRevealingRow(rowIdx);
     setIsRevealing(true);
 
-    // Reveal delay: WORD_LENGTH tiles * 300ms per tile + 200ms buffer
+    for (let i = 0; i < WORD_LENGTH; i++) audio.playTileFlip(i);
+
     const revealDuration = WORD_LENGTH * 300 + 400;
 
     setTimeout(() => {
-      // Update keyboard letter states
       const newLetterStates = { ...letterStates };
-      evaluated.forEach(({ char, state }) => {
+      evaluated.forEach(({ char, state }: { char: string; state: LetterState }) => {
         const current = newLetterStates[char];
-        if (state === "correct") {
-          newLetterStates[char] = "correct";
-        } else if (state === "present" && current !== "correct") {
-          newLetterStates[char] = "present";
-        } else if (state === "absent" && !current) {
-          newLetterStates[char] = "absent";
-        }
+        if (state === "correct") newLetterStates[char] = "correct";
+        else if (state === "present" && current !== "correct") newLetterStates[char] = "present";
+        else if (state === "absent" && !current) newLetterStates[char] = "absent";
       });
       setLetterStates(newLetterStates);
       setRevealingRow(-1);
@@ -202,75 +187,58 @@ export default function App() {
 
       if (isWon) {
         setGameStatus("won");
-        // Show ad immediately after game ends (≤0.33s delay per Yandex requirements)
-        // Modal opens after ad closes
+        audio.playWin();
         setFinishedGame({ word: targetWord, guessCount: newGuesses.length, status: "won" });
         if (window.ysdk) {
-          window.ysdk.adv.showFullscreenAdv({
-            callbacks: {
-              onClose: () => setShowModal(true),
-              onError: () => setShowModal(true),
-            },
-          });
+          window.ysdk.adv.showFullscreenAdv({ callbacks: { onClose: () => setShowModal(true), onError: () => setShowModal(true) } });
           window.ysdk.getLeaderboards().then(lb => {
-            const score = (MAX_GUESSES + 1 - newGuesses.length) * 100;
-            lb.setLeaderboardScore("wins", score).catch(() => {});
+            lb.setLeaderboardScore("wins", (MAX_GUESSES + 1 - newGuesses.length) * 100).catch(() => {});
           }).catch(() => {});
         } else {
           setShowModal(true);
         }
       } else if (isLost) {
         setGameStatus("lost");
+        audio.playLose();
         setFinishedGame({ word: targetWord, guessCount: newGuesses.length, status: "lost" });
         if (window.ysdk) {
-          window.ysdk.adv.showFullscreenAdv({
-            callbacks: {
-              onClose: () => setShowModal(true),
-              onError: () => setShowModal(true),
-            },
-          });
+          window.ysdk.adv.showFullscreenAdv({ callbacks: { onClose: () => setShowModal(true), onError: () => setShowModal(true) } });
         } else {
           setShowModal(true);
         }
       }
     }, revealDuration);
-  }, [currentInput, guesses, evaluateGuess, letterStates, showToast, isRevealing, targetWord]);
+  }, [currentInput, guesses, evaluateGuess, letterStates, showToast, isRevealing, targetWord, audio]);
 
-  const handleLetter = useCallback(
-    (letter: string) => {
-      if (gameStatus !== "playing" || isRevealing) return;
-      if ([...currentInput].length < WORD_LENGTH) {
-        setCurrentInput((prev) => prev + letter);
-      }
-    },
-    [gameStatus, currentInput, isRevealing]
-  );
+  const handleLetter = useCallback((letter: string) => {
+    if (gameStatus !== "playing" || isRevealing) return;
+    if ([...currentInput].length < WORD_LENGTH) {
+      audio.playLetterClick();
+      setCurrentInput((prev: string) => prev + letter);
+    }
+  }, [gameStatus, currentInput, isRevealing, audio]);
 
   const handleDelete = useCallback(() => {
     if (gameStatus !== "playing" || isRevealing) return;
-    setCurrentInput((prev) => [...prev].slice(0, -1).join(""));
-  }, [gameStatus, isRevealing]);
+    audio.playDeleteClick();
+    setCurrentInput((prev: string) => [...prev].slice(0, -1).join(""));
+  }, [gameStatus, isRevealing, audio]);
 
   const handleEnter = useCallback(() => {
     if (gameStatus !== "playing" || isRevealing) return;
     submitGuess();
   }, [gameStatus, submitGuess, isRevealing]);
 
-  // Physical keyboard input
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (showModal || showHowToPlay) return;
-      if (e.key === "Enter") {
-        handleEnter();
-      } else if (e.key === "Backspace") {
-        handleDelete();
-      } else if (/^[а-яёА-ЯЁ]$/.test(e.key)) {
-        handleLetter(e.key.toLowerCase());
-      }
+      if (showModal || showHowToPlay || showSettings) return;
+      if (e.key === "Enter") handleEnter();
+      else if (e.key === "Backspace") handleDelete();
+      else if (/^[а-яёА-ЯЁ]$/.test(e.key)) handleLetter(e.key.toLowerCase());
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [handleEnter, handleDelete, handleLetter, showModal, showHowToPlay]);
+  }, [handleEnter, handleDelete, handleLetter, showModal, showHowToPlay, showSettings]);
 
   const startNewGame = useCallback(() => {
     setTargetWord(getRandomWord());
@@ -286,47 +254,31 @@ export default function App() {
     setFinishedGame(null);
   }, []);
 
-  // Start new game — show ad first (user action = button click, ≤0.33s per Yandex rules)
   const handleNewGame = useCallback(() => {
     if (window.ysdk) {
-      window.ysdk.adv.showFullscreenAdv({
-        callbacks: {
-          onClose: () => startNewGame(),
-          onError: () => startNewGame(),
-        },
-      });
+      window.ysdk.adv.showFullscreenAdv({ callbacks: { onClose: () => startNewGame(), onError: () => startNewGame() } });
     } else {
       startNewGame();
     }
   }, [startNewGame]);
+
   const handleHint = useCallback(() => {
     if (gameStatus !== "playing") return;
-
     const revealHint = () => {
       const knownCorrect = new Set<number>();
-      guesses.forEach(g => {
-        g.letters.forEach((l, i) => { if (l.state === "correct") knownCorrect.add(i); });
-      });
-      // also exclude already hinted positions
+      guesses.forEach((g: GuessRow) => g.letters.forEach((l, i: number) => { if (l.state === "correct") knownCorrect.add(i); }));
       Object.keys(revealedHints).forEach(k => knownCorrect.add(Number(k)));
       const unknown = [...targetWord].map((_, i) => i).filter(i => !knownCorrect.has(i));
       if (unknown.length === 0) return;
       const idx = unknown[Math.floor(Math.random() * unknown.length)];
-      const letter = [...targetWord][idx];
-      setRevealedHints(prev => ({ ...prev, [idx]: letter }));
+      setRevealedHints((prev: Record<number, string>) => ({ ...prev, [idx]: [...targetWord][idx] }));
     };
-
     if (window.ysdk) {
-      window.ysdk.adv.showRewardedVideo({
-        callbacks: {
-          onRewarded: revealHint,
-          onError: () => {},
-        },
-      });
+      window.ysdk.adv.showRewardedVideo({ callbacks: { onRewarded: revealHint, onError: () => {} } });
     } else {
       revealHint();
     }
-  }, [gameStatus, guesses, targetWord, revealedHints, showToast]);
+  }, [gameStatus, guesses, targetWord, revealedHints]);
 
   return (
     <div className="min-h-screen bg-[#121213] flex flex-col items-center text-white select-none touch-manipulation">
@@ -335,9 +287,8 @@ export default function App() {
       <Header
         onHowToPlay={() => { setInteractiveHowToPlay(false); setShowHowToPlay(true); }}
         onNewGame={handleNewGame}
+        onSettings={() => setShowSettings(true)}
       />
-
-      {/* Toast notification removed */}
 
       <main className="flex flex-col items-center gap-5 pt-6 pb-4 flex-1 w-full max-w-lg px-2">
         <GameBoard
@@ -350,12 +301,10 @@ export default function App() {
           revealedHints={revealedHints}
         />
 
-        {/* Hint button */}
         {gameStatus === "playing" && (
           <button
             onClick={handleHint}
-            title="Посмотреть рекламу и получить подсказку"
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all bg-[#252526] hover:bg-[#2f2f30] active:scale-95 text-gray-300"
+            className="px-4 py-2 rounded-xl text-sm font-bold transition-all bg-[#252526] hover:bg-[#2f2f30] active:scale-95 text-gray-300"
           >
             Подсказка за рекламу
           </button>
@@ -369,15 +318,14 @@ export default function App() {
         />
       </main>
 
-      {/* How to play modal */}
       {showHowToPlay && (
-        <HowToPlay
-          onClose={() => setShowHowToPlay(false)}
-          interactive={interactiveHowToPlay}
-        />
+        <HowToPlay onClose={() => setShowHowToPlay(false)} interactive={interactiveHowToPlay} />
       )}
 
-      {/* Game over modal */}
+      {showSettings && (
+        <Settings settings={audioSettings} onChange={setAudioSettings} onClose={() => setShowSettings(false)} />
+      )}
+
       {showModal && finishedGame && (
         <Modal
           status={finishedGame.status}
