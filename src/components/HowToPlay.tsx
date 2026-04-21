@@ -1,34 +1,33 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface HowToPlayProps {
   onClose: () => void;
   interactive?: boolean;
 }
 
-type TileColor = "correct" | "present" | "absent" | "empty" | "active";
+type TileColor = "correct" | "present" | "absent" | "empty";
 
 interface TileProps {
   char: string;
   color: TileColor;
-  animDelay?: number;
-  revealed?: boolean;
+  flip?: boolean;
+  flipDelay?: number;
 }
 
-function Tile({ char, color, animDelay = 0, revealed = false }: TileProps) {
+function Tile({ char, color, flip = false, flipDelay = 0 }: TileProps) {
   const colorMap: Record<TileColor, string> = {
     correct: "bg-[#538d4e] border-[#538d4e] text-white",
     present: "bg-[#b59f3b] border-[#b59f3b] text-white",
     absent:  "bg-[#3a3a3c] border-[#3a3a3c] text-white",
     empty:   "bg-transparent border-gray-600 text-white",
-    active:  "bg-transparent border-gray-400 text-white",
   };
 
   return (
     <div
-      className={`w-11 h-11 flex items-center justify-center border-2 rounded text-lg font-black uppercase transition-all ${colorMap[color]}`}
+      className={`w-11 h-11 flex items-center justify-center border-2 rounded text-lg font-black uppercase ${colorMap[color]}`}
       style={
-        revealed
-          ? { animation: "flipReveal 0.5s ease forwards", animationDelay: `${animDelay}s` }
+        flip
+          ? { animation: "flipReveal 0.5s ease forwards", animationDelay: `${flipDelay}s` }
           : {}
       }
     >
@@ -37,115 +36,126 @@ function Tile({ char, color, animDelay = 0, revealed = false }: TileProps) {
   );
 }
 
-// The three demo words for interactive tutorial
-// Target word: КОШКА
-// Step 1: ЗУБРЫ — all absent
-// Step 2: ВОЛНА — some present
-// Step 3: КОШКА — all correct
+// Tutorial steps: target word is КОШКА
+// Step 0: show ЗУБРЫ typing in → reveal all absent
+// Step 1: show ВОЛКА typing in → reveal mixed
+// Step 2: show КОШКА typing in → reveal all correct
 
-const STEP_WORDS = [
-  { word: ["з","у","б","р","ы"], states: ["absent","absent","absent","absent","absent"] as TileColor[] },
-  { word: ["в","о","л","к","а"], states: ["absent","present","absent","present","correct"] as TileColor[] },
-  { word: ["к","о","ш","к","а"], states: ["correct","correct","correct","correct","correct"] as TileColor[] },
+const STEPS = [
+  {
+    word: ["з","у","б","р","ы"],
+    states: ["absent","absent","absent","absent","absent"] as TileColor[],
+    hint: "Ни одной буквы нет в слове — все серые",
+  },
+  {
+    word: ["в","о","л","к","а"],
+    states: ["absent","present","absent","present","correct"] as TileColor[],
+    hint: 'Буквы О и К есть в слове, но не на своём месте. А — стоит правильно!',
+  },
+  {
+    word: ["к","о","ш","к","а"],
+    states: ["correct","correct","correct","correct","correct"] as TileColor[],
+    hint: "Все буквы на своих местах — слово угадано!",
+  },
 ];
 
-const STEP_MESSAGES = [
-  "Ни одной буквы нет в слове — все серые",
-  "Буквы О и К есть в слове, но не на своём месте. А есть в слове и стоит правильно!",
-  "Все буквы на своих местах — слово угадано!",
-];
-
-type InteractiveStep = 0 | 1 | 2 | 3; // 0=typing step1, 1=typing step2, 2=typing step3, 3=done
+type Phase =
+  | { kind: "typing"; stepIdx: number; typed: number }   // печатаем буквы
+  | { kind: "revealing"; stepIdx: number }               // анимация переворота
+  | { kind: "revealed"; stepIdx: number }                // показываем подсказку
+  | { kind: "done" };                                    // всё готово
 
 export default function HowToPlay({ onClose, interactive = false }: HowToPlayProps) {
-  const [step, setStep] = useState<InteractiveStep>(0);
-  const [input, setInput] = useState<string[]>([]);
-  const [revealed, setRevealed] = useState<boolean[]>([false, false, false]);
-  const [isRevealing, setIsRevealing] = useState(false);
-  const [showMessage, setShowMessage] = useState(false);
+  const [phase, setPhase] = useState<Phase>({ kind: "typing", stepIdx: 0, typed: 0 });
+  // rows[i] = null (not started) | "typing" | "revealed"
+  const [rows, setRows] = useState<("idle" | "typing" | "revealing" | "revealed")[]>(["typing", "idle", "idle"]);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const currentTarget = STEP_WORDS[step < 3 ? step : 2].word;
-  const isInputComplete = input.length === 5;
+  const clear = () => { if (timerRef.current) clearTimeout(timerRef.current); };
 
-  // Reveal animation for current step
-  const revealStep = () => {
-    if (isRevealing || step >= 3) return;
-    setIsRevealing(true);
-    setShowMessage(false);
+  const advance = () => {
+    if (phase.kind === "done") { onClose(); return; }
 
-    // After reveal animation (5 tiles * 0.15s delay + 0.5s anim = ~1.25s)
-    setTimeout(() => {
-      const newRevealed = [...revealed];
-      newRevealed[step] = true;
-      setRevealed(newRevealed);
-      setIsRevealing(false);
-      setShowMessage(true);
+    if (phase.kind === "typing") {
+      const { stepIdx, typed } = phase;
+      const step = STEPS[stepIdx];
 
-      setTimeout(() => {
-        if (step < 2) {
-          setStep((s) => (s + 1) as InteractiveStep);
-          setInput([]);
-          setShowMessage(false);
-        } else {
-          setStep(3);
-        }
-      }, 1800);
-    }, 5 * 150 + 600);
-  };
+      if (typed < step.word.length) {
+        // type next letter
+        timerRef.current = setTimeout(() => {
+          setPhase({ kind: "typing", stepIdx, typed: typed + 1 });
+        }, 80);
+      } else {
+        // all letters typed → start reveal
+        setRows(r => { const n = [...r]; n[stepIdx] = "revealing"; return n; });
+        setPhase({ kind: "revealing", stepIdx });
+        // wait for flip animation (5 tiles * 150ms delay + 500ms anim)
+        timerRef.current = setTimeout(() => {
+          setRows(r => { const n = [...r]; n[stepIdx] = "revealed"; return n; });
+          setPhase({ kind: "revealed", stepIdx });
+        }, 5 * 150 + 600);
+      }
+    }
 
-  const handleKey = (key: string) => {
-    if (step >= 3 || isRevealing) return;
-    if (key === "del") {
-      setInput((prev) => prev.slice(0, -1));
-    } else if (key === "enter") {
-      if (isInputComplete) revealStep();
-    } else if (input.length < 5) {
-      setInput((prev) => [...prev, key]);
+    if (phase.kind === "revealed") {
+      const next = phase.stepIdx + 1;
+      if (next >= STEPS.length) {
+        setPhase({ kind: "done" });
+      } else {
+        setRows(r => { const n = [...r]; n[next] = "typing"; return n; });
+        setPhase({ kind: "typing", stepIdx: next, typed: 0 });
+      }
     }
   };
 
-  // Keyboard rows for mini keyboard
-  const KB_ROWS = [
-    ["й","ц","у","к","е","н","г","ш","щ","з","х"],
-    ["ф","ы","в","а","п","р","о","л","д","ж","э"],
-    ["enter","я","ч","с","м","и","т","ь","б","ю","del"],
-  ];
+  // Auto-type letters one by one when phase is "typing"
+  useEffect(() => {
+    if (phase.kind !== "typing") return;
+    const { stepIdx, typed } = phase;
+    if (typed >= STEPS[stepIdx].word.length) return;
+    timerRef.current = setTimeout(() => {
+      setPhase({ kind: "typing", stepIdx, typed: typed + 1 });
+    }, 120);
+    return clear;
+  }, [phase]);
 
-  const renderRow = (wordData: typeof STEP_WORDS[0], rowIdx: number) => {
-    const isCurrentStep = rowIdx === step && step < 3;
-    const isRevealedRow = revealed[rowIdx];
-    const isRevealingRow = isRevealing && rowIdx === step;
+  // After all letters typed, auto-trigger reveal after short pause
+  useEffect(() => {
+    if (phase.kind !== "typing") return;
+    const { stepIdx, typed } = phase;
+    if (typed < STEPS[stepIdx].word.length) return;
+    // small pause before reveal starts
+    timerRef.current = setTimeout(() => {
+      setRows(r => { const n = [...r]; n[stepIdx] = "revealing"; return n; });
+      setPhase({ kind: "revealing", stepIdx });
+    }, 400);
+    return clear;
+  }, [phase]);
 
-    return (
-      <div key={rowIdx} className="flex gap-1.5 justify-center">
-        {wordData.word.map((char, j) => {
-          if (isRevealedRow || isRevealingRow) {
-            return (
-              <Tile
-                key={j}
-                char={char}
-                color={wordData.states[j]}
-                animDelay={isRevealingRow ? j * 0.15 : 0}
-                revealed={isRevealingRow}
-              />
-            );
-          }
-          if (isCurrentStep) {
-            const inputChar = input[j] || "";
-            return (
-              <Tile
-                key={j}
-                char={inputChar}
-                color={inputChar ? "active" : "empty"}
-              />
-            );
-          }
-          // Future rows — empty
-          return <Tile key={j} char="" color="empty" />;
-        })}
-      </div>
-    );
+  // After revealing, mark as revealed
+  useEffect(() => {
+    if (phase.kind !== "revealing") return;
+    const { stepIdx } = phase;
+    timerRef.current = setTimeout(() => {
+      setRows(r => { const n = [...r]; n[stepIdx] = "revealed"; return n; });
+      setPhase({ kind: "revealed", stepIdx });
+    }, 5 * 150 + 600);
+    return clear;
+  }, [phase]);
+
+  const getButtonLabel = () => {
+    if (phase.kind === "done") return "Играть!";
+    if (phase.kind === "revealed") {
+      return phase.stepIdx < STEPS.length - 1 ? "Далее →" : "Начать игру!";
+    }
+    return "...";
   };
+
+  const isButtonActive = phase.kind === "revealed" || phase.kind === "done";
+
+  const currentHint =
+    phase.kind === "revealed" ? STEPS[phase.stepIdx].hint :
+    phase.kind === "done" ? STEPS[STEPS.length - 1].hint : null;
 
   return (
     <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 p-3 animate-fade-in">
@@ -154,7 +164,7 @@ export default function HowToPlay({ onClose, interactive = false }: HowToPlayPro
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-black text-white uppercase tracking-widest text-center flex-1">
-            {interactive ? "Попробуй сам!" : "Как играть"}
+            {interactive ? "Как играть" : "Как играть"}
           </h2>
           <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors ml-2 shrink-0">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -165,97 +175,70 @@ export default function HowToPlay({ onClose, interactive = false }: HowToPlayPro
         </div>
 
         {interactive ? (
-          /* ── INTERACTIVE MODE ── */
           <div>
-            <p className="text-gray-400 text-sm text-center mb-4">
-              {step < 3
-                ? <>Угадай слово <strong className="text-white">КОШКА</strong> — введи слово и нажми ВВОД</>
-                : <span className="text-[#538d4e] font-bold">Отлично! Теперь ты знаешь как играть!</span>
-              }
+            <p className="text-gray-400 text-sm text-center mb-5">
+              Угадай слово <strong className="text-white uppercase tracking-widest">КОШКА</strong> за 6 попыток
             </p>
 
-            {/* Mini board */}
-            <div className="flex flex-col gap-1.5 mb-4">
-              {STEP_WORDS.map((w, i) => renderRow(w, i))}
-            </div>
-
-            {/* Step message */}
-            {showMessage && step < 3 && (
-              <div className="bg-[#252526] rounded-xl px-4 py-2.5 mb-4 text-center animate-fade-in">
-                <p className="text-gray-300 text-xs">{STEP_MESSAGES[step > 0 ? step - 1 : 0]}</p>
-              </div>
-            )}
-            {step === 3 && (
-              <div className="bg-[#252526] rounded-xl px-4 py-2.5 mb-4 text-center animate-fade-in">
-                <p className="text-gray-300 text-xs">{STEP_MESSAGES[2]}</p>
-              </div>
-            )}
-
-            {/* Mini keyboard */}
-            {step < 3 && (
-              <div className="flex flex-col gap-1.5 mb-4">
-                {KB_ROWS.map((row, ri) => (
-                  <div key={ri} className="flex justify-center gap-1">
-                    {row.map((key) => {
-                      if (key === "enter") {
+            {/* Board */}
+            <div className="flex flex-col gap-1.5 mb-5">
+              {STEPS.map((step, i) => {
+                const rowState = rows[i];
+                return (
+                  <div key={i} className="flex gap-1.5 justify-center">
+                    {step.word.map((char, j) => {
+                      if (rowState === "idle") {
+                        return <Tile key={j} char="" color="empty" />;
+                      }
+                      if (rowState === "typing") {
+                        const typed = phase.kind === "typing" && phase.stepIdx === i ? phase.typed : 0;
                         return (
-                          <button
-                            key="enter"
-                            onClick={() => handleKey("enter")}
-                            disabled={!isInputComplete || isRevealing}
-                            className={`h-10 px-2 min-w-[48px] text-xs font-bold rounded uppercase transition-all flex items-center justify-center
-                              ${isInputComplete && !isRevealing
-                                ? "bg-[#538d4e] text-white active:scale-95"
-                                : "bg-[#3a3a3c] text-gray-500 cursor-not-allowed"
-                              }`}
-                          >
-                            ввод
-                          </button>
+                          <Tile
+                            key={j}
+                            char={j < typed ? char : ""}
+                            color="empty"
+                          />
                         );
                       }
-                      if (key === "del") {
+                      if (rowState === "revealing") {
                         return (
-                          <button
-                            key="del"
-                            onClick={() => handleKey("del")}
-                            className="h-10 px-2 min-w-[36px] bg-[#818384] text-white text-xs font-bold rounded active:scale-95 transition-all flex items-center justify-center"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/>
-                              <line x1="18" y1="9" x2="12" y2="15"/>
-                              <line x1="12" y1="9" x2="18" y2="15"/>
-                            </svg>
-                          </button>
+                          <Tile
+                            key={j}
+                            char={char}
+                            color={step.states[j]}
+                            flip
+                            flipDelay={j * 0.15}
+                          />
                         );
                       }
-                      return (
-                        <button
-                          key={key}
-                          onClick={() => handleKey(key)}
-                          className="h-10 w-7 text-xs font-bold rounded bg-[#818384] text-white active:scale-95 transition-all flex items-center justify-center"
-                        >
-                          {key.toUpperCase()}
-                        </button>
-                      );
+                      // revealed
+                      return <Tile key={j} char={char} color={step.states[j]} />;
                     })}
                   </div>
-                ))}
-              </div>
-            )}
+                );
+              })}
+            </div>
 
+            {/* Hint box */}
+            <div className={`bg-[#252526] rounded-xl px-4 py-3 mb-5 text-center min-h-[52px] flex items-center justify-center transition-opacity duration-300 ${currentHint ? "opacity-100" : "opacity-0"}`}>
+              <p className="text-gray-300 text-sm">{currentHint ?? " "}</p>
+            </div>
+
+            {/* Button */}
             <button
-              onClick={onClose}
-              className={`w-full py-3 font-bold rounded-xl transition-all uppercase tracking-wider text-sm
-                ${step === 3
+              onClick={() => { if (isButtonActive) advance(); }}
+              disabled={!isButtonActive}
+              className={`w-full py-3.5 font-black rounded-xl transition-all uppercase tracking-widest text-sm
+                ${isButtonActive
                   ? "bg-[#538d4e] hover:bg-[#4a7d45] active:scale-95 text-white"
-                  : "bg-[#252526] text-gray-500 cursor-default"
+                  : "bg-[#252526] text-gray-600 cursor-not-allowed"
                 }`}
             >
-              {step === 3 ? "Играть!" : "Пройди обучение..."}
+              {getButtonLabel()}
             </button>
           </div>
         ) : (
-          /* ── STATIC MODE ── */
+          /* Static mode */
           <div>
             <div className="text-gray-300 text-sm space-y-3 mb-5 text-center">
               <p>Угадайте <strong className="text-white">ВОРДЛИ</strong> за 6 попыток.</p>
@@ -276,7 +259,6 @@ export default function HowToPlay({ onClose, interactive = false }: HowToPlayPro
                   Буква <strong className="text-white">К</strong> стоит на <strong className="text-[#538d4e]">правильном месте</strong>.
                 </p>
               </div>
-
               <div className="flex flex-col items-center">
                 <div className="flex gap-1.5 mb-2">
                   {["с","л","о","в","о"].map((c, i) => (
@@ -287,7 +269,6 @@ export default function HowToPlay({ onClose, interactive = false }: HowToPlayPro
                   Буква <strong className="text-white">О</strong> есть в слове, но <strong className="text-[#b59f3b]">не на этом месте</strong>.
                 </p>
               </div>
-
               <div className="flex flex-col items-center">
                 <div className="flex gap-1.5 mb-2">
                   {["г","р","о","з","а"].map((c, i) => (
