@@ -63,6 +63,7 @@ export default function App() {
   const [letterStates, setLetterStates] = useState<Record<string, LetterState>>({});
   const [revealingRow, setRevealingRow] = useState<number>(-1);
   const [isRevealing, setIsRevealing] = useState(false);
+  const [hintUsed, setHintUsed] = useState(false);
   const messageTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleLoadingDone = useCallback(() => {
@@ -248,7 +249,36 @@ export default function App() {
     setRevealingRow(-1);
     setIsRevealing(false);
     setMessage("");
+    setHintUsed(false);
   }, []);
+
+  // Reveal a random unrevealed letter as a hint after watching an ad
+  const handleHint = useCallback(() => {
+    if (gameStatus !== "playing") return;
+
+    const revealHint = () => {
+      const knownCorrect = new Set<number>();
+      guesses.forEach(g => {
+        g.letters.forEach((l, i) => { if (l.state === "correct") knownCorrect.add(i); });
+      });
+      const unknown = [...targetWord].map((_, i) => i).filter(i => !knownCorrect.has(i));
+      if (unknown.length === 0) return;
+      const idx = unknown[Math.floor(Math.random() * unknown.length)];
+      const letter = [...targetWord][idx];
+      showToast(`Подсказка: буква ${letter.toUpperCase()} на позиции ${idx + 1}`, 4000);
+    };
+
+    if (window.ysdk) {
+      window.ysdk.adv.showRewardedVideo({
+        callbacks: {
+          onRewarded: revealHint,
+          onError: () => showToast("Реклама недоступна"),
+        },
+      });
+    } else {
+      revealHint();
+    }
+  }, [gameStatus, guesses, targetWord, showToast]);
 
   return (
     <div className="min-h-screen bg-[#121213] flex flex-col items-center text-white select-none touch-manipulation">
@@ -275,6 +305,23 @@ export default function App() {
           shake={shake}
           revealRow={revealingRow}
         />
+
+        {/* Hint button */}
+        {gameStatus === "playing" && (
+          <button
+            onClick={handleHint}
+            disabled={hintUsed}
+            title={hintUsed ? "Подсказка уже использована" : "Посмотреть рекламу и получить подсказку"}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all
+              ${hintUsed
+                ? "bg-[#252526] text-gray-600 cursor-not-allowed"
+                : "bg-[#252526] hover:bg-[#2f2f30] active:scale-95 text-gray-300"
+              }`}
+          >
+            <span>💡</span>
+            <span>{hintUsed ? "Подсказка использована" : "Подсказка за рекламу"}</span>
+          </button>
+        )}
 
         <Keyboard
           letterStates={letterStates}

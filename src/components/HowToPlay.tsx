@@ -105,42 +105,7 @@ export default function HowToPlay({ onClose, interactive = false }: HowToPlayPro
 
   const clear = () => { if (timerRef.current) clearTimeout(timerRef.current); };
 
-  const advance = () => {
-    if (phase.kind === "done") { onClose(); return; }
-
-    if (phase.kind === "typing") {
-      const { stepIdx, typed } = phase;
-      const step = STEPS[stepIdx];
-
-      if (typed < step.word.length) {
-        // type next letter
-        timerRef.current = setTimeout(() => {
-          setPhase({ kind: "typing", stepIdx, typed: typed + 1 });
-        }, 80);
-      } else {
-        // all letters typed → start reveal
-        setRows(r => { const n = [...r]; n[stepIdx] = "revealing"; return n; });
-        setPhase({ kind: "revealing", stepIdx });
-        // wait for flip animation (5 tiles * 150ms delay + 500ms anim)
-        timerRef.current = setTimeout(() => {
-          setRows(r => { const n = [...r]; n[stepIdx] = "revealed"; return n; });
-          setPhase({ kind: "revealed", stepIdx });
-        }, 5 * 150 + 600);
-      }
-    }
-
-    if (phase.kind === "revealed") {
-      const next = phase.stepIdx + 1;
-      if (next >= STEPS.length) {
-        setPhase({ kind: "done" });
-      } else {
-        setRows(r => { const n = [...r]; n[next] = "typing"; return n; });
-        setPhase({ kind: "typing", stepIdx: next, typed: 0 });
-      }
-    }
-  };
-
-  // Auto-type letters one by one when phase is "typing"
+  const currentHint =
   useEffect(() => {
     if (phase.kind !== "typing") return;
     const { stepIdx, typed } = phase;
@@ -178,14 +143,27 @@ export default function HowToPlay({ onClose, interactive = false }: HowToPlayPro
   const getButtonLabel = () => {
     if (phase.kind === "done") return "Играть!";
     if (phase.kind === "revealed") {
-      return phase.stepIdx < STEPS.length - 1 ? "Далее" : "Начать игру!";
+      return phase.stepIdx < STEPS.length - 1 ? "Далее" : "Играть!";
     }
     return "...";
   };
 
   const isButtonActive = phase.kind === "revealed" || phase.kind === "done";
 
-  const currentHint =
+  const handleButton = () => {
+    if (!isButtonActive) return;
+    if (phase.kind === "done") { onClose(); return; }
+    if (phase.kind === "revealed") {
+      const next = phase.stepIdx + 1;
+      if (next >= STEPS.length) {
+        // last step — close immediately
+        onClose();
+      } else {
+        setRows(r => { const n = [...r]; n[next] = "typing"; return n; });
+        setPhase({ kind: "typing", stepIdx: next, typed: 0 });
+      }
+    }
+  };
     phase.kind === "revealed" ? STEPS[phase.stepIdx].hint :
     phase.kind === "done" ? STEPS[STEPS.length - 1].hint : null;
 
@@ -254,7 +232,7 @@ export default function HowToPlay({ onClose, interactive = false }: HowToPlayPro
 
             {/* Button */}
             <button
-              onClick={() => { if (isButtonActive) advance(); }}
+              onClick={handleButton}
               disabled={!isButtonActive}
               className={`w-full py-3.5 font-black rounded-xl transition-all uppercase tracking-widest text-sm
                 ${isButtonActive
