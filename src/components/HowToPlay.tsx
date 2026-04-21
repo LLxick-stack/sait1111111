@@ -15,16 +15,48 @@ interface TileProps {
 }
 
 function Tile({ char, color, flip = false, flipDelay = 0 }: TileProps) {
-  const colorMap: Record<TileColor, string> = {
-    correct: "bg-[#538d4e] border-[#538d4e] text-white",
-    present: "bg-[#b59f3b] border-[#b59f3b] text-white",
-    absent:  "bg-[#3a3a3c] border-[#3a3a3c] text-white",
-    empty:   "bg-transparent border-gray-600 text-white",
-  };
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!flip) return;
+    const el = ref.current;
+    if (!el) return;
+
+    // Apply color at the halfway point of the flip
+    const colorDelay = (flipDelay + 0.25) * 1000;
+    const timer = setTimeout(() => {
+      if (!el) return;
+      el.classList.remove("bg-transparent", "border-gray-600");
+      switch (color) {
+        case "correct":
+          el.classList.add("bg-[#538d4e]", "border-[#538d4e]");
+          break;
+        case "present":
+          el.classList.add("bg-[#b59f3b]", "border-[#b59f3b]");
+          break;
+        case "absent":
+          el.classList.add("bg-[#3a3a3c]", "border-[#3a3a3c]");
+          break;
+      }
+    }, colorDelay);
+
+    return () => clearTimeout(timer);
+  }, [flip, color, flipDelay]);
+
+  const baseClass = flip
+    ? "bg-transparent border-gray-600 text-white"
+    : color === "empty"
+    ? "bg-transparent border-gray-600 text-white"
+    : color === "correct"
+    ? "bg-[#538d4e] border-[#538d4e] text-white"
+    : color === "present"
+    ? "bg-[#b59f3b] border-[#b59f3b] text-white"
+    : "bg-[#3a3a3c] border-[#3a3a3c] text-white";
 
   return (
     <div
-      className={`w-11 h-11 flex items-center justify-center border-2 rounded text-lg font-black uppercase ${colorMap[color]}`}
+      ref={ref}
+      className={`w-11 h-11 flex items-center justify-center border-2 rounded text-lg font-black uppercase ${baseClass}`}
       style={
         flip
           ? { animation: "flipReveal 0.5s ease forwards", animationDelay: `${flipDelay}s` }
@@ -37,25 +69,25 @@ function Tile({ char, color, flip = false, flipDelay = 0 }: TileProps) {
 }
 
 // Tutorial steps: target word is КОШКА
-// Step 0: show ЗУБРЫ typing in → reveal all absent
-// Step 1: show ВОЛКА typing in → reveal mixed
-// Step 2: show КОШКА typing in → reveal all correct
+// Step 0: БЕТОН - all absent (no letters from КОШКА)
+// Step 1: ЛАСКА - К present (pos3->pos0), А correct (pos4), остальные absent
+// Step 2: КОШКА - all correct
 
 const STEPS = [
   {
-    word: ["з","у","б","р","ы"],
+    word: ["б","е","т","о","н"],
     states: ["absent","absent","absent","absent","absent"] as TileColor[],
-    hint: "Ни одной буквы нет в слове — все серые",
+    hint: "Ни одной буквы нет в слове - все серые",
   },
   {
-    word: ["в","о","л","к","а"],
-    states: ["absent","present","absent","present","correct"] as TileColor[],
-    hint: 'Буквы О и К есть в слове, но не на своём месте. А — стоит правильно!',
+    word: ["л","а","с","к","а"],
+    states: ["absent","absent","absent","present","correct"] as TileColor[],
+    hint: "К есть в слове, но не на этом месте. А стоит правильно!",
   },
   {
     word: ["к","о","ш","к","а"],
     states: ["correct","correct","correct","correct","correct"] as TileColor[],
-    hint: "Все буквы на своих местах — слово угадано!",
+    hint: "Все буквы на своих местах - слово угадано!",
   },
 ];
 
@@ -146,7 +178,7 @@ export default function HowToPlay({ onClose, interactive = false }: HowToPlayPro
   const getButtonLabel = () => {
     if (phase.kind === "done") return "Играть!";
     if (phase.kind === "revealed") {
-      return phase.stepIdx < STEPS.length - 1 ? "Далее →" : "Начать игру!";
+      return phase.stepIdx < STEPS.length - 1 ? "Далее" : "Начать игру!";
     }
     return "...";
   };
@@ -176,10 +208,6 @@ export default function HowToPlay({ onClose, interactive = false }: HowToPlayPro
 
         {interactive ? (
           <div>
-            <p className="text-gray-400 text-sm text-center mb-5">
-              Угадай слово <strong className="text-white uppercase tracking-widest">КОШКА</strong> за 6 попыток
-            </p>
-
             {/* Board */}
             <div className="flex flex-col gap-1.5 mb-5">
               {STEPS.map((step, i) => {
@@ -243,7 +271,7 @@ export default function HowToPlay({ onClose, interactive = false }: HowToPlayPro
             <div className="text-gray-300 text-sm space-y-3 mb-5 text-center">
               <p>Угадайте <strong className="text-white">ВОРДЛИ</strong> за 6 попыток.</p>
               <ul className="space-y-1 list-none">
-                <li>Каждая попытка — <strong className="text-white">настоящее слово</strong> из 5 букв.</li>
+                <li>Каждая попытка - <strong className="text-white">настоящее слово</strong> из 5 букв.</li>
                 <li>Цвет плиток подсказывает, насколько верна попытка.</li>
               </ul>
             </div>
