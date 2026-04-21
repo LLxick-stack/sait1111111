@@ -20,7 +20,7 @@ export default function Header({ onHowToPlay, onNewGame, onSettings }: HeaderPro
       </button>
 
       <h1 className="text-2xl font-black tracking-[0.15em] text-white uppercase">
-        Русский Вордли
+        Развитие словарного запаса
       </h1>
 
       <div className="flex items-center gap-1">
