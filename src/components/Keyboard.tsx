@@ -37,7 +37,7 @@ export default function Keyboard({ letterStates, onLetter, onDelete, onEnter }: 
                 <button
                   key="enter"
                   onClick={onEnter}
-                  className="h-16 px-2 min-w-[64px] bg-[#818384] border border-[#818384] text-white text-sm font-bold rounded uppercase cursor-pointer hover:opacity-90 active:scale-95 transition-all flex items-center justify-center"
+                  className="h-[58px] px-1 min-w-[62px] bg-[#818384] border border-[#818384] text-white text-sm font-bold rounded-lg uppercase cursor-pointer hover:opacity-90 active:scale-95 transition-all flex items-center justify-center"
                 >
                   ввод
                 </button>
@@ -48,7 +48,7 @@ export default function Keyboard({ letterStates, onLetter, onDelete, onEnter }: 
                 <button
                   key="del"
                   onClick={onDelete}
-                  className="h-16 px-2 min-w-[52px] bg-[#818384] border border-[#818384] text-white text-sm font-bold rounded uppercase cursor-pointer hover:opacity-90 active:scale-95 transition-all flex items-center justify-center"
+                  className="h-[58px] px-1 min-w-[50px] bg-[#818384] border border-[#818384] text-white font-bold rounded-lg uppercase cursor-pointer hover:opacity-90 active:scale-95 transition-all flex items-center justify-center"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/>
@@ -62,7 +62,7 @@ export default function Keyboard({ letterStates, onLetter, onDelete, onEnter }: 
               <button
                 key={key}
                 onClick={() => onLetter(key)}
-                className={`h-16 w-10 sm:w-11 text-base font-bold rounded border cursor-pointer active:scale-95 transition-all flex items-center justify-center ${getKeyClass(letterStates[key])}`}
+                className={`h-[58px] flex-1 max-w-[42px] text-base font-bold rounded-lg border cursor-pointer active:scale-95 transition-all flex items-center justify-center ${getKeyClass(letterStates[key])}`}
               >
                 {key.toUpperCase()}
               </button>

@@ -5,6 +5,7 @@ import GameBoard from "./components/GameBoard";
 import Modal from "./components/Modal";
 import Header from "./components/Header";
 import HowToPlay from "./components/HowToPlay";
+import LoadingScreen from "./components/LoadingScreen";
 
 declare global {
   interface Window {
@@ -49,12 +50,14 @@ function initYandexSDK() {
 }
 
 export default function App() {
+  const [loading, setLoading] = useState(true);
   const [targetWord, setTargetWord] = useState<string>(() => getRandomWord());
   const [guesses, setGuesses] = useState<GuessRow[]>([]);
   const [currentInput, setCurrentInput] = useState<string>("");
   const [gameStatus, setGameStatus] = useState<"playing" | "won" | "lost">("playing");
   const [shake, setShake] = useState(false);
   const [showHowToPlay, setShowHowToPlay] = useState(false);
+  const [interactiveHowToPlay, setInteractiveHowToPlay] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [message, setMessage] = useState<string>("");
   const [letterStates, setLetterStates] = useState<Record<string, LetterState>>({});
@@ -62,14 +65,18 @@ export default function App() {
   const [isRevealing, setIsRevealing] = useState(false);
   const messageTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    initYandexSDK();
-    // Show how to play on first visit
+  const handleLoadingDone = useCallback(() => {
+    setLoading(false);
     const visited = localStorage.getItem("wordle_visited");
     if (!visited) {
+      setInteractiveHowToPlay(true);
       setShowHowToPlay(true);
       localStorage.setItem("wordle_visited", "1");
     }
+  }, []);
+
+  useEffect(() => {
+    initYandexSDK();
   }, []);
 
   const showToast = useCallback((msg: string, duration = 2000) => {
@@ -245,8 +252,10 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#121213] flex flex-col items-center text-white select-none touch-manipulation">
+      {loading && <LoadingScreen onDone={handleLoadingDone} />}
+
       <Header
-        onHowToPlay={() => setShowHowToPlay(true)}
+        onHowToPlay={() => { setInteractiveHowToPlay(false); setShowHowToPlay(true); }}
         onNewGame={startNewGame}
       />
 
@@ -277,7 +286,10 @@ export default function App() {
 
       {/* How to play modal */}
       {showHowToPlay && (
-        <HowToPlay onClose={() => setShowHowToPlay(false)} />
+        <HowToPlay
+          onClose={() => setShowHowToPlay(false)}
+          interactive={interactiveHowToPlay}
+        />
       )}
 
       {/* Game over modal */}
