@@ -25,6 +25,27 @@ interface YaSDK {
     canReview: () => Promise<{ value: boolean }>;
     requestReview: () => Promise<void>;
   };
+  getLeaderboards: () => Promise<YaLeaderboards>;
+}
+
+interface YaLeaderboards {
+  setLeaderboardScore: (name: string, score: number) => Promise<void>;
+  getLeaderboardEntries: (name: string, opts?: {
+    includeUser?: boolean;
+    quantityAround?: number;
+    quantityTop?: number;
+  }) => Promise<{
+    entries: Array<{
+      score: number;
+      rank: number;
+      player: { publicName: string; getAvatarSrc: (size: string) => string };
+    }>;
+    userEntry?: {
+      score: number;
+      rank: number;
+      player: { publicName: string };
+    };
+  }>;
 }
 
 export type LetterState = "correct" | "present" | "absent" | "empty" | "active";
@@ -64,6 +85,8 @@ export default function App() {
   const [revealingRow, setRevealingRow] = useState<number>(-1);
   const [isRevealing, setIsRevealing] = useState(false);
   const [revealedHints, setRevealedHints] = useState<Record<number, string>>({});
+  // Snapshot of the finished game — frozen when modal opens, never changes until next game ends
+  const [finishedGame, setFinishedGame] = useState<{ word: string; guessCount: number; status: "won" | "lost" } | null>(null);
   const messageTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleLoadingDone = useCallback(() => {
@@ -179,20 +202,36 @@ export default function App() {
 
       if (isWon) {
         setGameStatus("won");
-        setTimeout(() => {
+        // Show ad immediately after game ends (≤0.33s delay per Yandex requirements)
+        // Modal opens after ad closes
+        setFinishedGame({ word: targetWord, guessCount: newGuesses.length, status: "won" });
+        if (window.ysdk) {
+          window.ysdk.adv.showFullscreenAdv({
+            callbacks: {
+              onClose: () => setShowModal(true),
+              onError: () => setShowModal(true),
+            },
+          });
+          window.ysdk.getLeaderboards().then(lb => {
+            const score = (MAX_GUESSES + 1 - newGuesses.length) * 100;
+            lb.setLeaderboardScore("wins", score).catch(() => {});
+          }).catch(() => {});
+        } else {
           setShowModal(true);
-          if (window.ysdk) {
-            window.ysdk.adv.showFullscreenAdv({});
-          }
-        }, 1500);
+        }
       } else if (isLost) {
         setGameStatus("lost");
-        setTimeout(() => {
+        setFinishedGame({ word: targetWord, guessCount: newGuesses.length, status: "lost" });
+        if (window.ysdk) {
+          window.ysdk.adv.showFullscreenAdv({
+            callbacks: {
+              onClose: () => setShowModal(true),
+              onError: () => setShowModal(true),
+            },
+          });
+        } else {
           setShowModal(true);
-          if (window.ysdk) {
-            window.ysdk.adv.showFullscreenAdv({});
-          }
-        }, 2000);
+        }
       }
     }, revealDuration);
   }, [currentInput, guesses, evaluateGuess, letterStates, showToast, isRevealing, targetWord]);
@@ -244,9 +283,22 @@ export default function App() {
     setIsRevealing(false);
     setMessage("");
     setRevealedHints({});
+    setFinishedGame(null);
   }, []);
 
-  // Reveal a random unrevealed letter as a hint after watching an ad
+  // Start new game — show ad first (user action = button click, ≤0.33s per Yandex rules)
+  const handleNewGame = useCallback(() => {
+    if (window.ysdk) {
+      window.ysdk.adv.showFullscreenAdv({
+        callbacks: {
+          onClose: () => startNewGame(),
+          onError: () => startNewGame(),
+        },
+      });
+    } else {
+      startNewGame();
+    }
+  }, [startNewGame]);
   const handleHint = useCallback(() => {
     if (gameStatus !== "playing") return;
 
@@ -282,7 +334,7 @@ export default function App() {
 
       <Header
         onHowToPlay={() => { setInteractiveHowToPlay(false); setShowHowToPlay(true); }}
-        onNewGame={startNewGame}
+        onNewGame={handleNewGame}
       />
 
       {/* Toast notification removed */}
@@ -326,13 +378,12 @@ export default function App() {
       )}
 
       {/* Game over modal */}
-      {showModal && gameStatus !== "playing" && (
+      {showModal && finishedGame && (
         <Modal
-          key={targetWord}
-          status={gameStatus}
-          targetWord={targetWord}
-          guessCount={guesses.length}
-          onNewGame={startNewGame}
+          status={finishedGame.status}
+          targetWord={finishedGame.word}
+          guessCount={finishedGame.guessCount}
+          onNewGame={handleNewGame}
           onClose={() => setShowModal(false)}
         />
       )}

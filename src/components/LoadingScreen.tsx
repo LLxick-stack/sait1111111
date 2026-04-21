@@ -68,11 +68,6 @@ export default function LoadingScreen({ onDone }: LoadingScreenProps) {
         })}
       </div>
 
-      <h1 className="text-3xl font-black text-white uppercase tracking-widest mb-2">
-        Русский Вордли
-      </h1>
-      <p className="text-gray-500 text-sm mb-10">Угадай слово за 6 попыток</p>
-
       {/* Progress bar */}
       <div className="w-48 h-1.5 bg-[#3a3a3c] rounded-full overflow-hidden">
         <div
