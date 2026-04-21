@@ -69,14 +69,15 @@ export default function LoadingScreen({ onDone }: LoadingScreenProps) {
       </div>
 
       {/* Progress bar */}
-      <div className="w-48 h-1.5 bg-[#3a3a3c] rounded-full overflow-hidden mt-8">
-        <div
-          className="h-full bg-[#538d4e] rounded-full transition-all duration-300 ease-out"
-          style={{ width: `${progress}%` }}
-        />
+      <div className="flex flex-col items-center gap-2 mt-8">
+        <p className="text-gray-600 text-xs tracking-widest uppercase">JavaSF</p>
+        <div className="w-56 h-1.5 bg-[#3a3a3c] rounded-full overflow-hidden">
+          <div
+            className="h-full bg-[#538d4e] rounded-full transition-all duration-300 ease-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
       </div>
-
-      <p className="text-gray-600 text-xs mt-4 tracking-widest uppercase">JavaSF</p>
     </div>
   );
 }

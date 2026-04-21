@@ -247,7 +247,7 @@ export default function HowToPlay({ onClose, interactive = false }: HowToPlayPro
           /* Static mode */
           <div>
             <div className="text-gray-300 text-sm space-y-3 mb-5 text-center">
-              <p>Угадайте <strong className="text-white">ВОРДЛИ</strong> за 6 попыток.</p>
+              <p>Угадайте <strong className="text-white">СЛОВО</strong> за 6 попыток.</p>
               <ul className="space-y-1 list-none">
                 <li>Каждая попытка - <strong className="text-white">настоящее слово</strong> из 5 букв.</li>
                 <li>Цвет плиток подсказывает, насколько верна попытка.</li>
