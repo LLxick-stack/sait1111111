@@ -127,21 +127,18 @@ export default function App() {
     const guess = currentInput.toLowerCase();
 
     if ([...guess].length !== WORD_LENGTH) {
-      showToast("Слово должно быть из 5 букв!");
       setShake(true);
       setTimeout(() => setShake(false), 600);
       return;
     }
 
     if (!/^[а-яё]{5}$/.test(guess)) {
-      showToast("Используйте только русские буквы!");
       setShake(true);
       setTimeout(() => setShake(false), 600);
       return;
     }
 
     if (!isValidGuess(guess)) {
-      showToast("Слова нет в словаре!");
       setShake(true);
       setTimeout(() => setShake(false), 600);
       return;
@@ -182,8 +179,6 @@ export default function App() {
 
       if (isWon) {
         setGameStatus("won");
-        const winMsgs = ["Гений! 🏆", "Отлично! 🎉", "Молодец! 👏", "Хорошо! 😊", "Неплохо! 😌", "Уфф, успел! 😅"];
-        showToast(winMsgs[newGuesses.length - 1] || "Победа! 🎉");
         setTimeout(() => {
           setShowModal(true);
           if (window.ysdk) {
@@ -192,7 +187,6 @@ export default function App() {
         }, 1500);
       } else if (isLost) {
         setGameStatus("lost");
-        showToast(`Слово: ${targetWord.toUpperCase()}`, 4000);
         setTimeout(() => {
           setShowModal(true);
           if (window.ysdk) {
@@ -274,7 +268,7 @@ export default function App() {
       window.ysdk.adv.showRewardedVideo({
         callbacks: {
           onRewarded: revealHint,
-          onError: () => showToast("Реклама недоступна"),
+          onError: () => {},
         },
       });
     } else {
@@ -291,12 +285,7 @@ export default function App() {
         onNewGame={startNewGame}
       />
 
-      {/* Toast notification */}
-      {message && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-white text-gray-900 font-bold px-5 py-3 rounded-xl shadow-2xl text-sm pointer-events-none animate-fade-in whitespace-nowrap">
-          {message}
-        </div>
-      )}
+      {/* Toast notification removed */}
 
       <main className="flex flex-col items-center gap-5 pt-6 pb-4 flex-1 w-full max-w-lg px-2">
         <GameBoard

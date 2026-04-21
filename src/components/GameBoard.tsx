@@ -134,7 +134,7 @@ export default function GameBoard({
                   ${hasChar
                     ? "border-gray-400 bg-transparent text-white"
                     : hint
-                    ? "border-[#538d4e] bg-[#538d4e]/20 text-[#538d4e]"
+                    ? "border-[#538d4e] bg-[#538d4e] text-white"
                     : "border-gray-700 bg-transparent text-white"
                   }
                 `}
@@ -162,7 +162,7 @@ export default function GameBoard({
                 key={j}
                 className={`w-14 h-14 flex items-center justify-center border-2 rounded text-2xl font-bold uppercase
                   ${hint
-                    ? "border-[#538d4e] bg-[#538d4e]/20 text-[#538d4e]"
+                    ? "border-[#538d4e] bg-[#538d4e] text-white"
                     : "border-gray-700 bg-transparent text-white"
                   }`}
               >
