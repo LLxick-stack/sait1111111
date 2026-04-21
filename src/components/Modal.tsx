@@ -146,7 +146,7 @@ export default function Modal({
           onClick={onNewGame}
           className="w-full py-3.5 bg-[#538d4e] hover:bg-[#4a7d45] active:scale-95 text-white font-black text-sm rounded-xl transition-all uppercase tracking-widest"
         >
-          🔄 Новая игра
+          Новая игра
         </button>
       </div>
     </div>

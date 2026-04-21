@@ -68,14 +68,14 @@ export default function HowToPlay({ onClose }: HowToPlayProps) {
               ))}
             </div>
             <p className="text-gray-400 text-xs">
-              Буквы <strong className="text-white">З</strong> <strong className="text-[#3a3a3c] bg-[#3a3a3c] px-1 rounded">нет</strong> в слове ни на одном месте.
+              Буквы <strong className="text-white">З</strong> <strong className="text-white">нет</strong> в слове ни на одном месте.
             </p>
           </div>
         </div>
 
         <div className="border-t border-gray-700 pt-4 mt-4">
           <p className="text-gray-400 text-xs text-center">
-            Каждый день — новое слово! 🇷🇺
+            Каждый день — новое слово!
           </p>
         </div>
 
