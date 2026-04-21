@@ -74,9 +74,6 @@ export default function HowToPlay({ onClose }: HowToPlayProps) {
         </div>
 
         <div className="border-t border-gray-700 pt-4 mt-4">
-          <p className="text-gray-400 text-xs text-center">
-            Каждый день — новое слово!
-          </p>
         </div>
 
         <button

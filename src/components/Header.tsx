@@ -19,7 +19,7 @@ export default function Header({ onHowToPlay, onNewGame }: HeaderProps) {
       </button>
 
       <h1 className="text-2xl font-black tracking-[0.15em] text-white uppercase">
-        Вордли
+        Русский Вордли
       </h1>
 
       <button
