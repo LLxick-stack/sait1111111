@@ -86,7 +86,8 @@ export default function App() {
   const [revealedHints, setRevealedHints] = useState<Record<number, string>>({});
   const [finishedGame, setFinishedGame] = useState<{ word: string; guessCount: number; status: "won" | "lost" } | null>(null);
   const [audioSettings, setAudioSettings] = useState<AudioSettings>(loadSettings);
-  const messageTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const _timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const audio = useAudio(audioSettings);
 
   const handleLoadingDone = useCallback(() => {
     setLoading(false);
@@ -99,10 +100,6 @@ export default function App() {
   }, []);
 
   useEffect(() => { initYandexSDK(); }, []);
-
-  const showToast = useCallback((_msg: string, _duration = 2000) => {
-    // toasts removed
-  }, []);
 
   const evaluateGuess = useCallback(
     (guess: string): { char: string; state: LetterState }[] => {
@@ -208,7 +205,7 @@ export default function App() {
         }
       }
     }, revealDuration);
-  }, [currentInput, guesses, evaluateGuess, letterStates, showToast, isRevealing, targetWord, audio]);
+  }, [currentInput, guesses, evaluateGuess, letterStates, isRevealing, targetWord, audio]);
 
   const handleLetter = useCallback((letter: string) => {
     if (gameStatus !== "playing" || isRevealing) return;
@@ -249,7 +246,6 @@ export default function App() {
     setShowModal(false);
     setRevealingRow(-1);
     setIsRevealing(false);
-    setMessage("");
     setRevealedHints({});
     setFinishedGame(null);
   }, []);
@@ -266,7 +262,9 @@ export default function App() {
     if (gameStatus !== "playing") return;
     const revealHint = () => {
       const knownCorrect = new Set<number>();
-      guesses.forEach((g: GuessRow) => g.letters.forEach((l, i: number) => { if (l.state === "correct") knownCorrect.add(i); }));
+      guesses.forEach((g: GuessRow) => g.letters.forEach((l, i: number) => {
+        if (l.state === "correct") knownCorrect.add(i);
+      }));
       Object.keys(revealedHints).forEach(k => knownCorrect.add(Number(k)));
       const unknown = [...targetWord].map((_, i) => i).filter(i => !knownCorrect.has(i));
       if (unknown.length === 0) return;
@@ -279,6 +277,9 @@ export default function App() {
       revealHint();
     }
   }, [gameStatus, guesses, targetWord, revealedHints]);
+
+  // suppress unused warning
+  void _timerRef;
 
   return (
     <div className="min-h-screen bg-[#121213] flex flex-col items-center text-white select-none touch-manipulation">
