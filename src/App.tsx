@@ -328,6 +328,7 @@ export default function App() {
       {/* Game over modal */}
       {showModal && gameStatus !== "playing" && (
         <Modal
+          key={targetWord}
           status={gameStatus}
           targetWord={targetWord}
           guessCount={guesses.length}

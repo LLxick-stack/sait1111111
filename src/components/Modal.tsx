@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface ModalProps {
   status: "won" | "lost";
@@ -23,6 +23,12 @@ export default function Modal({
   onNewGame,
   onClose,
 }: ModalProps) {
+  // Freeze the values shown at mount time — prevents showing next game's data
+  // if the parent updates props before the modal is closed
+  const frozenStatus = useRef(status).current;
+  const frozenTarget = useRef(targetWord).current;
+  const frozenGuessCount = useRef(guessCount).current;
+
   const [stats, setStats] = useState({
     played: 0,
     won: 0,
@@ -31,20 +37,24 @@ export default function Modal({
     distribution: [0, 0, 0, 0, 0, 0],
   });
 
+  const updatedRef = useRef(false);
+
   useEffect(() => {
-    // Load & update stats
+    if (updatedRef.current) return;
+    updatedRef.current = true;
+
     const saved = localStorage.getItem("wordle_stats");
     const current = saved
       ? JSON.parse(saved)
       : { played: 0, won: 0, streak: 0, maxStreak: 0, distribution: [0, 0, 0, 0, 0, 0] };
 
     current.played += 1;
-    if (status === "won") {
+    if (frozenStatus === "won") {
       current.won += 1;
       current.streak += 1;
       current.maxStreak = Math.max(current.maxStreak, current.streak);
-      if (guessCount >= 1 && guessCount <= 6) {
-        current.distribution[guessCount - 1] += 1;
+      if (frozenGuessCount >= 1 && frozenGuessCount <= 6) {
+        current.distribution[frozenGuessCount - 1] += 1;
       }
     } else {
       current.streak = 0;
@@ -52,7 +62,8 @@ export default function Modal({
 
     localStorage.setItem("wordle_stats", JSON.stringify(current));
     setStats(current);
-  }, [status, guessCount]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const winRate = stats.played > 0 ? Math.round((stats.won / stats.played) * 100) : 0;
   const maxDist = Math.max(...stats.distribution, 1);
@@ -72,14 +83,14 @@ export default function Modal({
 
         {/* Result header */}
         <div className="text-center mb-5">
-          {status === "won" ? (
+          {frozenStatus === "won" ? (
             <>
-              <div className="text-5xl mb-2">{["🏆","🎉","👏","😊","😌","😅"][guessCount - 1] || "🎉"}</div>
+              <div className="text-5xl mb-2">{["🏆","🎉","👏","😊","😌","😅"][frozenGuessCount - 1] || "🎉"}</div>
               <h2 className="text-xl font-black text-white mb-1">
                 {winMessage || "Победа!"}
               </h2>
               <p className="text-gray-400 text-sm">
-                Угадал за {guessCount} {getAttemptWord(guessCount)}
+                Угадал за {frozenGuessCount} {getAttemptWord(frozenGuessCount)}
               </p>
             </>
           ) : (
@@ -95,7 +106,7 @@ export default function Modal({
         <div className="bg-[#252526] rounded-xl p-3 mb-5 text-center">
           <p className="text-gray-500 text-xs uppercase tracking-widest mb-1">Загаданное слово</p>
           <p className="text-white text-2xl font-black uppercase tracking-[0.2em]">
-            {targetWord}
+            {frozenTarget}
           </p>
         </div>
 
@@ -120,7 +131,7 @@ export default function Modal({
           <p className="text-gray-500 text-xs uppercase tracking-widest text-center mb-2">Распределение попыток</p>
           <div className="space-y-1">
             {stats.distribution.map((count, i) => {
-              const isCurrentRow = status === "won" && guessCount === i + 1;
+              const isCurrentRow = frozenStatus === "won" && frozenGuessCount === i + 1;
               const width = count > 0 ? Math.max(8, Math.round((count / maxDist) * 100)) : 8;
               return (
                 <div key={i} className="flex items-center gap-2 text-xs">
