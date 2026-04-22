@@ -24,7 +24,7 @@ function getKeyStyle(state: LetterState | undefined): React.CSSProperties {
 
 const baseBtn: React.CSSProperties = {
   height: "100%",
-  fontSize: "calc(var(--key-height) * 0.38)",
+  fontSize: "calc(var(--key-height) * 0.62)",
   border: "1px solid",
   display: "flex",
   alignItems: "center",
@@ -48,7 +48,7 @@ export default function Keyboard({ letterStates, onLetter, onDelete, onEnter }: 
                 <button
                   key="enter"
                   onClick={onEnter}
-                  style={{ ...baseBtn, flex: 1.5, fontSize: "calc(var(--key-height) * 0.28)", textTransform: "uppercase", ...getKeyStyle(undefined) }}
+                  style={{ ...baseBtn, flex: 1.5, fontSize: "calc(var(--key-height) * 0.42)", textTransform: "uppercase", ...getKeyStyle(undefined) }}
                 >
                   ввод
                 </button>
