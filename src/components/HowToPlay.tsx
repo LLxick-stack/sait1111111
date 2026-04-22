@@ -63,9 +63,9 @@ const STEPS = [
     hint: "Ни одной буквы нет в слове - все серые",
   },
   {
-    word: ["л","а","с","к","а"],
-    states: ["absent","absent","absent","present","correct"] as TileColor[],
-    hint: "К есть в слове, но не на этом месте. А стоит правильно!",
+    word: ["с","о","к","о","л"],
+    states: ["absent","correct","present","absent","absent"] as TileColor[],
+    hint: "О стоит правильно! К есть в слове, но не на этом месте.",
   },
   {
     word: ["к","о","ш","к","а"],
