@@ -34,6 +34,19 @@ interface YaSDK {
       };
     }) => void;
   };
+  environment: {
+    i18n: {
+      lang: string;
+      tld: string;
+    };
+    app: {
+      id: string;
+    };
+    browser: {
+      lang: string;
+    };
+    payload?: string;
+  };
   feedback: {
     canReview: () => Promise<{ value: boolean }>;
     requestReview: () => Promise<void>;
@@ -69,7 +82,12 @@ const MAX_GUESSES = 6;
 function initYandexSDK() {
   if (typeof window !== "undefined" && window.YaGames) {
     window.YaGames.init()
-      .then((sdk) => { window.ysdk = sdk; })
+      .then((sdk) => {
+        window.ysdk = sdk;
+        // Get player language
+        const lang = sdk.environment.i18n.lang;
+        console.log("Yandex SDK initialized, lang:", lang);
+      })
       .catch(() => { console.warn("Yandex SDK not available"); });
   }
 }
