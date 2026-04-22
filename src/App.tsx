@@ -111,6 +111,17 @@ export default function App() {
     };
   }, []);
 
+  const [tooSmall, setTooSmall] = useState(false);
+
+  useEffect(() => {
+    const MIN_W = 320;
+    const MIN_H = 480;
+    const check = () => setTooSmall(window.innerWidth < MIN_W || window.innerHeight < MIN_H);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   useEffect(() => { initYandexSDK(); }, []);
 
   const evaluateGuess = useCallback(
@@ -296,6 +307,21 @@ export default function App() {
   return (
     <div className="h-[100dvh] h-screen bg-[#121213] flex flex-col items-center text-white select-none touch-manipulation overflow-hidden">
       {loading && <LoadingScreen onDone={handleLoadingDone} />}
+
+      {tooSmall && (
+        <div className="fixed inset-0 bg-[#121213] z-[200] flex flex-col items-center justify-center gap-3 p-6">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#538d4e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
+            <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
+          </svg>
+          <p className="text-white text-lg font-black text-center uppercase tracking-widest">
+            Увеличьте экран
+          </p>
+          <p className="text-gray-500 text-xs text-center">
+            Минимальный размер: 320 × 480
+          </p>
+        </div>
+      )}
 
       <Header
         onHowToPlay={() => { setInteractiveHowToPlay(false); setShowHowToPlay(true); }}

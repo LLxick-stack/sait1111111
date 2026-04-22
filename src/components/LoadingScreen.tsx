@@ -7,16 +7,6 @@ interface LoadingScreenProps {
 export default function LoadingScreen({ onDone }: LoadingScreenProps) {
   const [progress, setProgress] = useState(0);
   const [fadeOut, setFadeOut] = useState(false);
-  const [tooSmall, setTooSmall] = useState(false);
-
-  useEffect(() => {
-    const checkSize = () => {
-      setTooSmall(window.innerWidth < 280 || window.innerHeight < 400);
-    };
-    checkSize();
-    window.addEventListener("resize", checkSize);
-    return () => window.removeEventListener("resize", checkSize);
-  }, []);
 
   useEffect(() => {
     const steps = [20, 45, 70, 90, 100];
@@ -33,23 +23,12 @@ export default function LoadingScreen({ onDone }: LoadingScreenProps) {
     return () => timers.forEach(clearTimeout);
   }, [onDone]);
 
-  if (tooSmall) {
-    return (
-      <div className="fixed inset-0 bg-[#121213] flex items-center justify-center z-[100] p-4">
-        <p className="text-white text-center text-sm font-bold">
-          Экран слишком маленький
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div
       className={`fixed inset-0 bg-[#121213] flex flex-col items-center justify-center z-[100] transition-opacity duration-400 ${
         fadeOut ? "opacity-0 pointer-events-none" : "opacity-100"
       }`}
     >
-      {/* Logo tiles */}
       <div className="flex gap-2 mb-8">
         {["Р", "У", "С", "В", "Д"].map((letter, i) => {
           const colors = [
@@ -76,7 +55,6 @@ export default function LoadingScreen({ onDone }: LoadingScreenProps) {
         })}
       </div>
 
-      {/* Progress bar */}
       <div className="flex flex-col items-center gap-3 mt-8">
         <p className="text-gray-400 text-lg font-bold tracking-widest uppercase">Загрузка</p>
         <div className="w-56 h-1.5 bg-[#3a3a3c] rounded-full overflow-hidden">
