@@ -392,10 +392,10 @@ export default function App() {
         onSettings={() => setShowSettings(true)}
       />
 
-      <main className="flex flex-col items-center flex-1 w-full max-w-lg px-2 overflow-hidden" style={{ paddingTop: "clamp(4px, 1vh, 12px)", paddingBottom: "clamp(4px, 1vh, 12px)", gap: "clamp(4px, 1vh, 12px)" }}>
+      <main className="flex flex-col items-center flex-1 w-full max-w-lg px-2 overflow-hidden justify-end" style={{ paddingTop: "clamp(2px, 0.5vh, 8px)", paddingBottom: "clamp(2px, 0.5vh, 8px)", gap: "clamp(4px, 1vh, 10px)" }}>
 
         {/* Board + hint button side by side */}
-        <div className="flex-1 flex items-center justify-center min-h-0 gap-2">
+        <div className="flex items-center justify-center gap-2">
           <GameBoard
             guesses={guesses}
             currentInput={currentInput}
@@ -406,16 +406,15 @@ export default function App() {
             revealedHints={revealedHints}
           />
 
-          {/* Hint button — vertical, right of board */}
           {gameStatus === "playing" && (
             <button
               onClick={handleHint}
               className="shrink-0 flex flex-col items-center justify-center gap-1 rounded-xl font-bold transition-all active:scale-95 text-gray-300"
-              style={{ background: "var(--bg3)", padding: "8px 6px", writingMode: "vertical-rl", fontSize: "0.7rem" }}
+              style={{ background: "var(--bg3)", padding: "8px 6px" }}
               title="Подсказка за рекламу"
             >
-              💡
-              <span style={{ writingMode: "vertical-rl", textOrientation: "mixed", fontSize: "0.65rem", lineHeight: 1.2 }}>
+              <span style={{ fontSize: "1.2rem" }}>💡</span>
+              <span style={{ writingMode: "vertical-rl", textOrientation: "mixed", fontSize: "0.6rem", lineHeight: 1.2 }}>
                 Подсказка
               </span>
             </button>
