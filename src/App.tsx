@@ -409,8 +409,8 @@ export default function App() {
           {gameStatus === "playing" && (
             <button
               onClick={handleHint}
-              className="shrink-0 flex items-center justify-center rounded-xl font-bold transition-all active:scale-95 text-gray-300"
-              style={{ background: "var(--bg3)", padding: "6px 8px", fontSize: "0.65rem", lineHeight: 1.3 }}
+              className="shrink-0 flex items-center justify-center rounded-xl font-bold transition-all active:scale-95"
+              style={{ background: "var(--bg3)", color: "var(--text)", padding: "6px 8px", fontSize: "0.65rem", lineHeight: 1.3 }}
               title="Подсказка за рекламу"
             >
               Под-<br/>сказ-<br/>ка

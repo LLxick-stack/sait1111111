@@ -150,39 +150,7 @@ export default function Modal({ status, targetWord, guessCount, winMessage, onNe
           </div>
         </div>
 
-        {/* Leaderboard */}
-        <div className="mb-5">
-          <p className="text-xs uppercase tracking-widest text-center mb-3" style={{ color: "var(--text2)" }}>Лидеры</p>
-          {lbLoading ? (
-            <div className="flex justify-center py-4">
-              <div className="w-5 h-5 border-2 border-t-[#538d4e] rounded-full animate-spin" style={{ borderColor: "var(--border)", borderTopColor: "#538d4e" }} />
-            </div>
-          ) : leaderboard.length === 0 ? (
-            <p className="text-xs text-center py-3" style={{ color: "var(--text2)" }}>Нет данных</p>
-          ) : (
-            <div className="space-y-1.5">
-              {leaderboard.map((entry) => (
-                <div
-                  key={entry.rank}
-                  className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm"
-                  style={entry.isMe
-                    ? { background: "rgba(83,141,78,0.15)", border: "1px solid rgba(83,141,78,0.4)" }
-                    : { background: "var(--bg3)" }
-                  }
-                >
-                  <span className="w-5 text-center font-black text-xs" style={{ color: entry.rank === 1 ? "#f59e0b" : entry.rank === 2 ? "#9ca3af" : entry.rank === 3 ? "#b45309" : "var(--text2)" }}>
-                    {entry.rank === 1 ? "🥇" : entry.rank === 2 ? "🥈" : entry.rank === 3 ? "🥉" : entry.rank}
-                  </span>
-                  {entry.avatar && <img src={entry.avatar} alt="" className="w-6 h-6 rounded-full" />}
-                  <span className="flex-1 truncate font-bold" style={{ color: entry.isMe ? "#538d4e" : "var(--text)" }}>
-                    {entry.isMe ? "Вы" : entry.name}
-                  </span>
-                  <span className="text-xs font-bold" style={{ color: "var(--text2)" }}>{entry.score}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Leaderboard removed */}
 
         {/* Button */}
         <button
