@@ -392,7 +392,7 @@ export default function App() {
         onSettings={() => setShowSettings(true)}
       />
 
-      <main className="flex flex-col items-center flex-1 w-full max-w-lg px-2 overflow-hidden justify-start" style={{ paddingTop: "clamp(2px, 0.5vh, 8px)", paddingBottom: "clamp(2px, 0.5vh, 8px)", gap: "clamp(4px, 1vh, 10px)" }}>
+      <main className="flex flex-col items-center flex-1 w-full px-2 overflow-hidden justify-start" style={{ paddingTop: "clamp(2px, 0.5vh, 8px)", paddingBottom: "clamp(2px, 0.5vh, 8px)", gap: "clamp(4px, 1vh, 10px)" }}>
 
         {/* Board + hint button side by side */}
         <div className="flex items-center justify-center gap-2">

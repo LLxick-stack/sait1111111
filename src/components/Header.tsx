@@ -6,7 +6,7 @@ interface HeaderProps {
 
 export default function Header({ onHowToPlay, onNewGame, onSettings }: HeaderProps) {
   return (
-    <header className="w-full max-w-lg flex items-center px-4 py-3"
+    <header className="w-full flex items-center px-4 py-3"
       style={{ borderBottom: "1px solid var(--border)" }}>
       <div className="w-16 flex justify-start">
         <button

@@ -24,7 +24,7 @@ function getKeyStyle(state: LetterState | undefined): React.CSSProperties {
 
 export default function Keyboard({ letterStates, onLetter, onDelete, onEnter }: KeyboardProps) {
   return (
-    <div className="w-full max-w-lg px-1" style={{ display: "flex", flexDirection: "column", gap: "var(--key-gap)" }}>
+    <div className="w-full px-1" style={{ display: "flex", flexDirection: "column", gap: "var(--key-gap)" }}>
       {ROWS.map((row, rowIdx) => (
         <div key={rowIdx} style={{ display: "flex", justifyContent: "center", gap: "var(--key-gap)" }}>
           {row.map((key) => {

@@ -18,7 +18,7 @@
   /* board = 6*tile + 5*4px, kb = 3*key + 2*4px                                  */
   /* tile = (avail * 0.55) / 6,  key = (avail * 0.35) / 3                        */
   --avail:       calc(100dvh - 127px);
-  --tile-size:   min(3.5rem, 11vw, calc(var(--avail) * 0.55 / 6));
+  --tile-size:   min(calc(90vw / 5), calc(var(--avail) * 0.55 / 6));
   --key-height:  min(3.2rem, calc(var(--avail) * 0.38 / 3));
   --key-gap:     min(5px, 1vw);
   --key-font:    clamp(0.6rem, 2.2vw, 0.85rem);
