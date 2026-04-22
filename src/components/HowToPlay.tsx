@@ -48,8 +48,14 @@ function Tile({ char, color, flip = false, flipDelay = 0 }: TileProps) {
   return (
     <div
       ref={ref}
-      className="w-11 h-11 flex items-center justify-center border-2 rounded text-lg font-black uppercase"
-      style={{ ...getStyle(), ...(flip ? { animation: "flipReveal 0.5s ease forwards", animationDelay: `${flipDelay}s` } : {}) }}
+      className="flex items-center justify-center border-2 rounded font-black uppercase"
+      style={{
+        width: "clamp(2rem, 10vw, 2.75rem)",
+        height: "clamp(2rem, 10vw, 2.75rem)",
+        fontSize: "clamp(0.8rem, 4vw, 1.1rem)",
+        ...getStyle(),
+        ...(flip ? { animation: "flipReveal 0.5s ease forwards", animationDelay: `${flipDelay}s` } : {})
+      }}
     >
       {char}
     </div>
@@ -172,21 +178,21 @@ export default function HowToPlay({ onClose, interactive = false }: HowToPlayPro
   };
 
   const TipsList = () => (
-    <div className="pt-4 space-y-2" style={{ borderTop: "1px solid var(--border)" }}>
-      <p className="text-xs uppercase tracking-widest text-center mb-3" style={{ color: "var(--text2)" }}>Кнопки управления</p>
+    <div className="pt-3 space-y-1.5" style={{ borderTop: "1px solid var(--border)" }}>
+      <p className="text-xs uppercase tracking-widest text-center mb-2" style={{ color: "var(--text2)" }}>Кнопки управления</p>
       {HEADER_TIPS.map((tip, i) => (
-        <div key={i} className="flex items-center gap-3 rounded-xl px-3 py-2.5" style={{ background: "var(--bg3)", color: "var(--text2)" }}>
+        <div key={i} className="flex items-center gap-2 rounded-xl px-2.5 py-2" style={{ background: "var(--bg3)", color: "var(--text2)" }}>
           <div className="shrink-0">{tip.icon}</div>
-          <div>
-            <div className="flex items-center gap-2">
-              <p className="text-sm font-bold" style={{ color: "var(--text)" }}>{tip.label}</p>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <p className="text-xs font-bold" style={{ color: "var(--text)" }}>{tip.label}</p>
               {tip.badge && (
-                <span className="text-white text-[0.55rem] font-bold px-1.5 py-0.5 rounded-full uppercase" style={{ background: "#e53e3e" }}>
+                <span className="text-white font-bold px-1 py-0.5 rounded-full uppercase shrink-0" style={{ background: "#e53e3e", fontSize: "0.5rem" }}>
                   {tip.badge}
                 </span>
               )}
             </div>
-            <p className="text-xs" style={{ color: "var(--text2)" }}>{tip.desc}</p>
+            <p className="text-xs leading-tight" style={{ color: "var(--text2)" }}>{tip.desc}</p>
           </div>
         </div>
       ))}
@@ -195,8 +201,8 @@ export default function HowToPlay({ onClose, interactive = false }: HowToPlayPro
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 p-3 animate-fade-in" style={{ background: "rgba(0,0,0,0.6)" }}>
-      <div className="rounded-2xl p-5 max-w-sm w-full shadow-2xl overflow-y-auto max-h-[95vh]"
-        style={{ background: "var(--bg2)", border: "1px solid var(--border)" }}>
+      <div className="rounded-2xl p-4 w-full shadow-2xl flex flex-col"
+        style={{ background: "var(--bg2)", border: "1px solid var(--border)", maxWidth: "min(380px, 95vw)", maxHeight: "90dvh", maxHeight: "90vh", overflowY: "auto" }}>
 
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
@@ -212,7 +218,7 @@ export default function HowToPlay({ onClose, interactive = false }: HowToPlayPro
 
         {interactive ? (
           <div>
-            <div className="flex flex-col gap-1.5 mb-5">
+            <div className="flex flex-col gap-1 mb-3">
               {STEPS.map((step, i) => {
                 const rowState = rows[i];
                 return (
@@ -231,9 +237,9 @@ export default function HowToPlay({ onClose, interactive = false }: HowToPlayPro
               })}
             </div>
 
-            <div className={`rounded-xl px-4 py-3 mb-4 text-center min-h-[52px] flex items-center justify-center transition-opacity duration-300 ${currentHint ? "opacity-100" : "opacity-0"}`}
+            <div className={`rounded-xl px-3 py-2 mb-3 text-center min-h-[44px] flex items-center justify-center transition-opacity duration-300 ${currentHint ? "opacity-100" : "opacity-0"}`}
               style={{ background: "var(--bg3)" }}>
-              <p className="text-sm" style={{ color: "var(--text)" }}>{currentHint ?? " "}</p>
+              <p className="text-xs" style={{ color: "var(--text)" }}>{currentHint ?? " "}</p>
             </div>
 
             <TipsList />
