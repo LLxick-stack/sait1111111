@@ -180,6 +180,23 @@ export function useAudio(settings: AudioSettings) {
     }
   }, [settings.musicEnabled, startMusic, stopMusic]);
 
+  // Pause audio when user leaves the page, resume when returns
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      const ctx = ctxRef.current;
+      if (!ctx) return;
+      if (document.hidden) {
+        ctx.suspend();
+      } else {
+        if (settings.musicEnabled) ctx.resume();
+        else ctx.resume(); // resume context but music won't play if disabled
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [settings.musicEnabled]);
+
   useEffect(() => {
     return () => {
       stopMusic();

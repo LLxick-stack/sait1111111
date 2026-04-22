@@ -147,35 +147,35 @@ export default function App() {
 
   const handleLoadingDone = useCallback(() => {
     setLoading(false);
-    // Show fullscreen ad on game start per Yandex SDK requirements
-    if (window.ysdk) {
-      window.ysdk.adv.showFullscreenAdv({
-        callbacks: {
-          onClose: () => {
-            const visited = localStorage.getItem("wordle_visited");
-            if (!visited) {
-              setInteractiveHowToPlay(true);
-              setShowHowToPlay(true);
-              localStorage.setItem("wordle_visited", "1");
-            }
-          },
-          onError: () => {
-            const visited = localStorage.getItem("wordle_visited");
-            if (!visited) {
-              setInteractiveHowToPlay(true);
-              setShowHowToPlay(true);
-              localStorage.setItem("wordle_visited", "1");
-            }
-          },
-        },
-      });
-    } else {
+
+    const showFirstVisit = () => {
       const visited = localStorage.getItem("wordle_visited");
       if (!visited) {
         setInteractiveHowToPlay(true);
         setShowHowToPlay(true);
         localStorage.setItem("wordle_visited", "1");
       }
+    };
+
+    // Show fullscreen ad on game start per Yandex SDK docs
+    if (window.ysdk) {
+      window.ysdk.adv.showFullscreenAdv({
+        callbacks: {
+          onOpen: () => {
+            console.log("Реклама при запуске открыта.");
+          },
+          onClose: (wasShown) => {
+            console.log(wasShown ? "Реклама показана и закрыта." : "Реклама не была показана.");
+            showFirstVisit();
+          },
+          onError: (error) => {
+            console.log("Ошибка показа рекламы при запуске.", error);
+            showFirstVisit();
+          },
+        },
+      });
+    } else {
+      showFirstVisit();
     }
   }, []);
 
