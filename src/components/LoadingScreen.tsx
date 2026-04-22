@@ -56,7 +56,7 @@ export default function LoadingScreen({ onDone }: LoadingScreenProps) {
       </div>
 
       <div className="flex flex-col items-center gap-3 mt-8">
-        <p className="text-gray-400 text-lg font-bold tracking-widest uppercase">Загрузка</p>
+        <p className="text-gray-400 font-black tracking-widest uppercase" style={{ fontSize: "clamp(2rem, 8vw, 3.5rem)" }}>Загрузка</p>
         <div className="w-56 h-1.5 bg-[#3a3a3c] rounded-full overflow-hidden">
           <div
             className="h-full bg-[#538d4e] rounded-full transition-all duration-300 ease-out"
