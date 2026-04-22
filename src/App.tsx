@@ -18,8 +18,21 @@ declare global {
 
 interface YaSDK {
   adv: {
-    showFullscreenAdv: (opts?: { callbacks?: Record<string, unknown> }) => void;
-    showRewardedVideo: (opts: { callbacks: Record<string, unknown> }) => void;
+    showFullscreenAdv: (opts?: {
+      callbacks?: {
+        onOpen?: () => void;
+        onClose?: (wasShown: boolean) => void;
+        onError?: (error: object) => void;
+      };
+    }) => void;
+    showRewardedVideo: (opts: {
+      callbacks: {
+        onOpen?: () => void;
+        onRewarded?: () => void;
+        onClose?: (wasShown: boolean) => void;
+        onError?: (error: object) => void;
+      };
+    }) => void;
   };
   feedback: {
     canReview: () => Promise<{ value: boolean }>;
@@ -134,11 +147,35 @@ export default function App() {
 
   const handleLoadingDone = useCallback(() => {
     setLoading(false);
-    const visited = localStorage.getItem("wordle_visited");
-    if (!visited) {
-      setInteractiveHowToPlay(true);
-      setShowHowToPlay(true);
-      localStorage.setItem("wordle_visited", "1");
+    // Show fullscreen ad on game start per Yandex SDK requirements
+    if (window.ysdk) {
+      window.ysdk.adv.showFullscreenAdv({
+        callbacks: {
+          onClose: () => {
+            const visited = localStorage.getItem("wordle_visited");
+            if (!visited) {
+              setInteractiveHowToPlay(true);
+              setShowHowToPlay(true);
+              localStorage.setItem("wordle_visited", "1");
+            }
+          },
+          onError: () => {
+            const visited = localStorage.getItem("wordle_visited");
+            if (!visited) {
+              setInteractiveHowToPlay(true);
+              setShowHowToPlay(true);
+              localStorage.setItem("wordle_visited", "1");
+            }
+          },
+        },
+      });
+    } else {
+      const visited = localStorage.getItem("wordle_visited");
+      if (!visited) {
+        setInteractiveHowToPlay(true);
+        setShowHowToPlay(true);
+        localStorage.setItem("wordle_visited", "1");
+      }
     }
   }, []);
 
@@ -345,6 +382,7 @@ export default function App() {
 
   const handleHint = useCallback(() => {
     if (gameStatus !== "playing") return;
+
     const revealHint = () => {
       const knownCorrect = new Set<number>();
       guesses.forEach((g: GuessRow) => g.letters.forEach((l, i: number) => {
@@ -356,9 +394,18 @@ export default function App() {
       const idx = unknown[Math.floor(Math.random() * unknown.length)];
       setRevealedHints((prev: Record<number, string>) => ({ ...prev, [idx]: [...targetWord][idx] }));
     };
+
     if (window.ysdk) {
-      window.ysdk.adv.showRewardedVideo({ callbacks: { onRewarded: revealHint, onError: () => {} } });
+      window.ysdk.adv.showRewardedVideo({
+        callbacks: {
+          onOpen: () => console.log("Реклама открыта."),
+          onRewarded: revealHint,
+          onClose: (wasShown) => console.log(wasShown ? "Показана и закрыта." : "Не показана."),
+          onError: (error) => console.log("Ошибка вызова.", error),
+        },
+      });
     } else {
+      // Dev mode — give hint without ad
       revealHint();
     }
   }, [gameStatus, guesses, targetWord, revealedHints]);
@@ -390,12 +437,14 @@ export default function App() {
         onHowToPlay={() => { setInteractiveHowToPlay(false); setShowHowToPlay(true); }}
         onNewGame={handleNewGame}
         onSettings={() => setShowSettings(true)}
+        onHint={handleHint}
+        gameStatus={gameStatus}
       />
 
       <main className="flex flex-col items-center flex-1 w-full px-2 overflow-hidden justify-start" style={{ paddingTop: "clamp(2px, 0.5vh, 8px)", paddingBottom: "max(12px, env(safe-area-inset-bottom, 12px))", gap: "clamp(4px, 1vh, 10px)" }}>
 
-        {/* Board + hint button side by side */}
-        <div className="flex items-center justify-center gap-2">
+        {/* Board only — hint moved to header */}
+        <div className="flex items-center justify-center">
           <GameBoard
             guesses={guesses}
             currentInput={currentInput}
@@ -405,17 +454,6 @@ export default function App() {
             revealRow={revealingRow}
             revealedHints={revealedHints}
           />
-
-          {gameStatus === "playing" && (
-            <button
-              onClick={handleHint}
-              className="shrink-0 flex items-center justify-center rounded-xl font-bold transition-all active:scale-95"
-              style={{ background: "var(--bg3)", color: "var(--text)", padding: "6px 8px", fontSize: "0.65rem", lineHeight: 1.3 }}
-              title="Подсказка за рекламу"
-            >
-              Под-<br/>сказ-<br/>ка
-            </button>
-          )}
         </div>
 
         {/* Keyboard — takes all remaining height */}

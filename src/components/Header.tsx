@@ -2,13 +2,17 @@ interface HeaderProps {
   onHowToPlay: () => void;
   onNewGame: () => void;
   onSettings: () => void;
+  onHint: () => void;
+  gameStatus: "playing" | "won" | "lost";
 }
 
-export default function Header({ onHowToPlay, onNewGame, onSettings }: HeaderProps) {
+export default function Header({ onHowToPlay, onNewGame, onSettings, onHint, gameStatus }: HeaderProps) {
   return (
     <header className="w-full flex items-center px-4 py-3"
       style={{ borderBottom: "1px solid var(--border)" }}>
-      <div className="w-16 flex justify-start">
+
+      {/* Left: How to play + Hint */}
+      <div className="flex items-center gap-1" style={{ width: "5rem" }}>
         <button
           onClick={onHowToPlay}
           className="transition-colors p-1"
@@ -21,6 +25,24 @@ export default function Header({ onHowToPlay, onNewGame, onSettings }: HeaderPro
             <path d="M12 17h.01"/>
           </svg>
         </button>
+
+        {gameStatus === "playing" && (
+          <button
+            onClick={onHint}
+            className="transition-colors p-1"
+            style={{ color: "var(--text2)" }}
+            title="Подсказка за рекламу"
+          >
+            {/* Ad/gift icon */}
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 12 20 22 4 22 4 12"/>
+              <rect x="2" y="7" width="20" height="5"/>
+              <line x1="12" y1="22" x2="12" y2="7"/>
+              <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+              <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+            </svg>
+          </button>
+        )}
       </div>
 
       <h1 className="flex-1 text-base font-black tracking-tight uppercase text-center leading-tight"
@@ -28,7 +50,8 @@ export default function Header({ onHowToPlay, onNewGame, onSettings }: HeaderPro
         Развитие<br/>словарного запаса
       </h1>
 
-      <div className="w-16 flex justify-end items-center gap-1">
+      {/* Right: Settings + New game */}
+      <div className="flex justify-end items-center gap-1" style={{ width: "5rem" }}>
         <button
           onClick={onSettings}
           className="transition-colors p-1"
