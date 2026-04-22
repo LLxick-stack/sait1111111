@@ -124,7 +124,21 @@ export default function HowToPlay({ onClose, interactive = false }: HowToPlayPro
   const [phase, setPhase] = useState<Phase>({ kind: "typing", stepIdx: 0, typed: 0 });
   const [rows, setRows] = useState<("idle" | "typing" | "revealing" | "revealed")[]>(["typing", "idle", "idle"]);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [tooSmall, setTooSmall] = useState(false);
   const clear = () => { if (timerRef.current) clearTimeout(timerRef.current); };
+
+  // Check if content fits on screen
+  useEffect(() => {
+    const check = () => {
+      const el = contentRef.current;
+      if (!el) return;
+      setTooSmall(el.scrollHeight > el.clientHeight);
+    };
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, [phase, rows]);
 
   useEffect(() => {
     if (phase.kind !== "typing") return;
@@ -203,6 +217,7 @@ export default function HowToPlay({ onClose, interactive = false }: HowToPlayPro
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 p-3 animate-fade-in" style={{ background: "rgba(0,0,0,0.6)" }}>
       <div
+        ref={contentRef}
         className="rounded-2xl w-full flex flex-col"
         style={{
           background: "var(--bg2)",
@@ -213,6 +228,28 @@ export default function HowToPlay({ onClose, interactive = false }: HowToPlayPro
           padding: "clamp(12px, 3vw, 20px)",
         }}
       >
+        {tooSmall && (
+          <div className="fixed inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-2xl"
+            style={{ background: "var(--bg2)" }}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#538d4e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
+              <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
+            </svg>
+            <p className="font-black text-center uppercase tracking-widest text-sm" style={{ color: "var(--text)" }}>
+              Увеличьте экран
+            </p>
+            <p className="text-xs text-center" style={{ color: "var(--text2)" }}>
+              Для просмотра инструкции нужен больший экран
+            </p>
+            <button
+              onClick={onClose}
+              className="mt-2 px-6 py-2 rounded-xl text-white font-bold text-sm uppercase"
+              style={{ background: "#538d4e" }}
+            >
+              Закрыть
+            </button>
+          </div>
+        )}
 
         {/* Header */}
         <div className="flex items-center justify-between mb-3">
