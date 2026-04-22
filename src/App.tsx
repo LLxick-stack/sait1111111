@@ -146,8 +146,6 @@ export default function App() {
   const audio = useAudio(audioSettings);
 
   const handleLoadingDone = useCallback(() => {
-    setLoading(false);
-
     const showFirstVisit = () => {
       const visited = localStorage.getItem("wordle_visited");
       if (!visited) {
@@ -157,7 +155,7 @@ export default function App() {
       }
     };
 
-    // Show fullscreen ad on game start per Yandex SDK docs
+    // Show fullscreen ad first, then reveal the game
     if (window.ysdk) {
       window.ysdk.adv.showFullscreenAdv({
         callbacks: {
@@ -166,15 +164,18 @@ export default function App() {
           },
           onClose: (wasShown) => {
             console.log(wasShown ? "Реклама показана и закрыта." : "Реклама не была показана.");
+            setLoading(false);
             showFirstVisit();
           },
           onError: (error) => {
             console.log("Ошибка показа рекламы при запуске.", error);
+            setLoading(false);
             showFirstVisit();
           },
         },
       });
     } else {
+      setLoading(false);
       showFirstVisit();
     }
   }, []);
