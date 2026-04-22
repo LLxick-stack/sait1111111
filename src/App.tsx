@@ -418,8 +418,8 @@ export default function App() {
           )}
         </div>
 
-        {/* Keyboard right under the board */}
-        <div className="shrink-0 w-full">
+        {/* Keyboard — takes all remaining height */}
+        <div className="w-full" style={{ flex: 1, display: "flex", minHeight: 0 }}>
           <Keyboard
             letterStates={letterStates}
             onLetter={handleLetter}
