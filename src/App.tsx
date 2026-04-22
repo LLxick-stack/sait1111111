@@ -392,32 +392,37 @@ export default function App() {
         onSettings={() => setShowSettings(true)}
       />
 
-      <main className="flex flex-col items-center gap-2 pt-2 pb-2 flex-1 w-full max-w-lg px-2 justify-between overflow-hidden">
-        <GameBoard
-          guesses={guesses}
-          currentInput={currentInput}
-          maxGuesses={MAX_GUESSES}
-          wordLength={WORD_LENGTH}
-          shake={shake}
-          revealRow={revealingRow}
-          revealedHints={revealedHints}
-        />
+      <main className="flex flex-col items-center flex-1 w-full max-w-lg px-2 overflow-hidden" style={{ paddingTop: "clamp(4px, 1vh, 12px)", paddingBottom: "clamp(4px, 1vh, 12px)", gap: "clamp(4px, 1vh, 16px)" }}>
+        <div className="flex-1 flex items-center justify-center min-h-0">
+          <GameBoard
+            guesses={guesses}
+            currentInput={currentInput}
+            maxGuesses={MAX_GUESSES}
+            wordLength={WORD_LENGTH}
+            shake={shake}
+            revealRow={revealingRow}
+            revealedHints={revealedHints}
+          />
+        </div>
 
         {gameStatus === "playing" && (
           <button
             onClick={handleHint}
-            className="px-4 py-2 rounded-xl text-sm font-bold transition-all bg-[#252526] hover:bg-[#2f2f30] active:scale-95 text-gray-300"
+            className="shrink-0 px-4 rounded-xl text-sm font-bold transition-all active:scale-95 text-gray-300"
+            style={{ paddingTop: "clamp(4px, 0.8vh, 8px)", paddingBottom: "clamp(4px, 0.8vh, 8px)", background: "var(--bg3)" }}
           >
             Подсказка за рекламу
           </button>
         )}
 
-        <Keyboard
-          letterStates={letterStates}
-          onLetter={handleLetter}
-          onDelete={handleDelete}
-          onEnter={handleEnter}
-        />
+        <div className="shrink-0 w-full">
+          <Keyboard
+            letterStates={letterStates}
+            onLetter={handleLetter}
+            onDelete={handleDelete}
+            onEnter={handleEnter}
+          />
+        </div>
       </main>
 
       {showHowToPlay && (

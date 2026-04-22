@@ -12,8 +12,9 @@
   --key-text:         #ffffff;
   --tile-border-empty:  #3a3a3c;
   --tile-border-active: #999;
-  --tile-size: min(3.5rem, 9vw, 8vh);
-  --key-height: min(3.5rem, 7vh);
+  /* tile = min of: 56px, 11vw, or 1/10 of viewport height */
+  --tile-size:   min(3.5rem, 11vw, 10vh);
+  --key-height:  min(3.5rem, 6.5vh);
 }
 
 [data-theme="light"] {
@@ -31,15 +32,15 @@
 
 @media (max-height: 650px) {
   :root {
-    --tile-size: min(2.8rem, 8vw, 7vh);
-    --key-height: min(2.8rem, 6vh);
+    --tile-size:  min(2.6rem, 10vw, 8.5vh);
+    --key-height: min(2.6rem, 5.5vh);
   }
 }
 
 @media (max-height: 500px) {
   :root {
-    --tile-size: min(2.2rem, 7vw, 6vh);
-    --key-height: min(2.4rem, 5vh);
+    --tile-size:  min(2rem, 9vw, 7vh);
+    --key-height: min(2rem, 5vh);
   }
 }
 
