@@ -50,9 +50,10 @@ function Tile({ char, color, flip = false, flipDelay = 0 }: TileProps) {
       ref={ref}
       className="flex items-center justify-center border-2 rounded font-black uppercase"
       style={{
-        width: "clamp(2rem, 10vw, 2.75rem)",
-        height: "clamp(2rem, 10vw, 2.75rem)",
-        fontSize: "clamp(0.8rem, 4vw, 1.1rem)",
+        width: "clamp(1.8rem, 8vw, 2.5rem)",
+        height: "clamp(1.8rem, 8vw, 2.5rem)",
+        fontSize: "clamp(0.7rem, 3.5vw, 1rem)",
+        flexShrink: 0,
         ...getStyle(),
         ...(flip ? { animation: "flipReveal 0.5s ease forwards", animationDelay: `${flipDelay}s` } : {})
       }}
@@ -201,16 +202,25 @@ export default function HowToPlay({ onClose, interactive = false }: HowToPlayPro
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 p-3 animate-fade-in" style={{ background: "rgba(0,0,0,0.6)" }}>
-      <div className="rounded-2xl p-4 w-full shadow-2xl flex flex-col"
-        style={{ background: "var(--bg2)", border: "1px solid var(--border)", maxWidth: "min(380px, 95vw)", maxHeight: "90dvh", maxHeight: "90vh", overflowY: "auto" }}>
+      <div
+        className="rounded-2xl w-full flex flex-col"
+        style={{
+          background: "var(--bg2)",
+          border: "1px solid var(--border)",
+          maxWidth: "min(380px, 95vw)",
+          height: "min(95dvh, 95vh)",
+          overflowY: "auto",
+          padding: "clamp(12px, 3vw, 20px)",
+        }}
+      >
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-black uppercase tracking-widest text-center flex-1" style={{ color: "var(--text)" }}>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-base font-black uppercase tracking-widest text-center flex-1" style={{ color: "var(--text)" }}>
             Как играть
           </h2>
           <button onClick={onClose} className="transition-colors ml-2 shrink-0" style={{ color: "var(--text2)" }}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
           </button>
@@ -257,22 +267,22 @@ export default function HowToPlay({ onClose, interactive = false }: HowToPlayPro
           </div>
         ) : (
           <div>
-            <div className="text-sm space-y-3 mb-5 text-center" style={{ color: "var(--text2)" }}>
+            <div className="text-xs space-y-2 mb-3 text-center" style={{ color: "var(--text2)" }}>
               <p>Угадайте <strong style={{ color: "var(--text)" }}>СЛОВО</strong> за 6 попыток.</p>
-              <ul className="space-y-1 list-none">
+              <ul className="space-y-0.5 list-none">
                 <li>Каждая попытка - <strong style={{ color: "var(--text)" }}>настоящее слово</strong> из 5 букв.</li>
                 <li>Цвет плиток подсказывает, насколько верна попытка.</li>
               </ul>
             </div>
 
-            <div className="pt-4 space-y-5" style={{ borderTop: "1px solid var(--border)" }}>
+            <div className="pt-3 space-y-3" style={{ borderTop: "1px solid var(--border)" }}>
               {[
                 { word: ["к","о","ш","к","а"], colorIdx: 0, color: "correct" as TileColor, text: <p className="text-xs text-center" style={{ color: "var(--text2)" }}>Буква <strong style={{ color: "var(--text)" }}>К</strong> стоит на <strong style={{ color: "#538d4e" }}>правильном месте</strong>.</p> },
                 { word: ["с","л","о","в","о"], colorIdx: 2, color: "present" as TileColor, text: <p className="text-xs text-center" style={{ color: "var(--text2)" }}>Буква <strong style={{ color: "var(--text)" }}>О</strong> есть в слове, но <strong style={{ color: "#b59f3b" }}>не на этом месте</strong>.</p> },
                 { word: ["г","р","о","з","а"], colorIdx: 3, color: "absent" as TileColor,  text: <p className="text-xs text-center" style={{ color: "var(--text2)" }}>Буквы <strong style={{ color: "var(--text)" }}>З</strong> <strong style={{ color: "var(--text)" }}>нет</strong> в слове ни на одном месте.</p> },
               ].map((row, ri) => (
                 <div key={ri} className="flex flex-col items-center">
-                  <div className="flex gap-1.5 mb-2">
+                  <div className="flex gap-1 mb-1">
                     {row.word.map((c, i) => <Tile key={i} char={c} color={i === row.colorIdx ? row.color : "empty"} />)}
                   </div>
                   {row.text}
@@ -284,7 +294,7 @@ export default function HowToPlay({ onClose, interactive = false }: HowToPlayPro
 
             <button
               onClick={onClose}
-              className="mt-5 w-full py-3 active:scale-95 text-white font-bold rounded-xl transition-all uppercase tracking-wider text-sm"
+              className="mt-3 w-full py-2.5 active:scale-95 text-white font-bold rounded-xl transition-all uppercase tracking-wider text-sm"
               style={{ background: "#538d4e" }}
             >
               Играть!
