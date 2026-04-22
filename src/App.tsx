@@ -392,8 +392,10 @@ export default function App() {
         onSettings={() => setShowSettings(true)}
       />
 
-      <main className="flex flex-col items-center flex-1 w-full max-w-lg px-2 overflow-hidden" style={{ paddingTop: "clamp(4px, 1vh, 12px)", paddingBottom: "clamp(4px, 1vh, 12px)", gap: "clamp(4px, 1vh, 16px)" }}>
-        <div className="flex-1 flex items-center justify-center min-h-0">
+      <main className="flex flex-col items-center flex-1 w-full max-w-lg px-2 overflow-hidden" style={{ paddingTop: "clamp(4px, 1vh, 12px)", paddingBottom: "clamp(4px, 1vh, 12px)", gap: "clamp(4px, 1vh, 12px)" }}>
+
+        {/* Board + hint button side by side */}
+        <div className="flex-1 flex items-center justify-center min-h-0 gap-2">
           <GameBoard
             guesses={guesses}
             currentInput={currentInput}
@@ -403,18 +405,24 @@ export default function App() {
             revealRow={revealingRow}
             revealedHints={revealedHints}
           />
+
+          {/* Hint button — vertical, right of board */}
+          {gameStatus === "playing" && (
+            <button
+              onClick={handleHint}
+              className="shrink-0 flex flex-col items-center justify-center gap-1 rounded-xl font-bold transition-all active:scale-95 text-gray-300"
+              style={{ background: "var(--bg3)", padding: "8px 6px", writingMode: "vertical-rl", fontSize: "0.7rem" }}
+              title="Подсказка за рекламу"
+            >
+              💡
+              <span style={{ writingMode: "vertical-rl", textOrientation: "mixed", fontSize: "0.65rem", lineHeight: 1.2 }}>
+                Подсказка
+              </span>
+            </button>
+          )}
         </div>
 
-        {gameStatus === "playing" && (
-          <button
-            onClick={handleHint}
-            className="shrink-0 px-4 rounded-xl text-sm font-bold transition-all active:scale-95 text-gray-300"
-            style={{ paddingTop: "clamp(4px, 0.8vh, 8px)", paddingBottom: "clamp(4px, 0.8vh, 8px)", background: "var(--bg3)" }}
-          >
-            Подсказка за рекламу
-          </button>
-        )}
-
+        {/* Keyboard right under the board */}
         <div className="shrink-0 w-full">
           <Keyboard
             letterStates={letterStates}
