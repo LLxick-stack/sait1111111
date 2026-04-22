@@ -99,6 +99,18 @@ export default function App() {
     }
   }, []);
 
+  // Disable right-click context menu and text selection
+  useEffect(() => {
+    const noContext = (e: MouseEvent) => e.preventDefault();
+    const noSelect = (e: Event) => e.preventDefault();
+    document.addEventListener("contextmenu", noContext);
+    document.addEventListener("selectstart", noSelect);
+    return () => {
+      document.removeEventListener("contextmenu", noContext);
+      document.removeEventListener("selectstart", noSelect);
+    };
+  }, []);
+
   useEffect(() => { initYandexSDK(); }, []);
 
   const evaluateGuess = useCallback(
