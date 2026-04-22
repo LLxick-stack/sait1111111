@@ -51,9 +51,9 @@ export default function Header({ onHowToPlay, onNewGame, onSettings, onHint, gam
         )}
       </div>
 
-      <h1 className="flex-1 text-base font-black tracking-tight uppercase text-center leading-tight"
+      <h1 className="flex-1 text-base font-black tracking-tight text-center leading-tight"
         style={{ color: "var(--text)" }}>
-        Гуси и лебеди
+        Гуси и Лебеди
       </h1>
 
       {/* Right: Settings + New game */}
