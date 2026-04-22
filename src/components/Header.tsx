@@ -29,11 +29,10 @@ export default function Header({ onHowToPlay, onNewGame, onSettings, onHint, gam
         {gameStatus === "playing" && (
           <button
             onClick={onHint}
-            className="transition-colors p-1"
+            className="transition-colors p-1 relative"
             style={{ color: "var(--text2)" }}
             title="Подсказка за рекламу"
           >
-            {/* Ad/gift icon */}
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="20 12 20 22 4 22 4 12"/>
               <rect x="2" y="7" width="20" height="5"/>
@@ -41,6 +40,13 @@ export default function Header({ onHowToPlay, onNewGame, onSettings, onHint, gam
               <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
               <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
             </svg>
+            {/* Red notification badge */}
+            <span
+              className="absolute top-0 right-0 w-3.5 h-3.5 rounded-full text-white flex items-center justify-center pointer-events-none"
+              style={{ background: "#e53e3e", fontSize: "0.5rem", fontWeight: 900, lineHeight: 1 }}
+            >
+              1
+            </span>
           </button>
         )}
       </div>

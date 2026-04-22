@@ -80,12 +80,28 @@ type Phase =
   | { kind: "revealed"; stepIdx: number }
   | { kind: "done" };
 
-interface TooltipItem { icon: React.ReactNode; label: string; desc: string; }
+interface TooltipItem { icon: React.ReactNode; label: string; desc: string; badge?: string; }
 
 const HEADER_TIPS: TooltipItem[] = [
   {
     icon: <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>,
     label: "Как играть", desc: "Открывает это окно с инструкцией",
+  },
+  {
+    icon: (
+      <div className="relative inline-flex">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 12 20 22 4 22 4 12"/>
+          <rect x="2" y="7" width="20" height="5"/>
+          <line x1="12" y1="22" x2="12" y2="7"/>
+          <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+          <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+        </svg>
+        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full text-white flex items-center justify-center" style={{ background: "#e53e3e", fontSize: "0.5rem", fontWeight: 900 }}>1</span>
+      </div>
+    ),
+    label: "Подсказка", desc: "Посмотри рекламу и узнай одну букву",
+    badge: "реклама",
   },
   {
     icon: <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>,
@@ -162,7 +178,14 @@ export default function HowToPlay({ onClose, interactive = false }: HowToPlayPro
         <div key={i} className="flex items-center gap-3 rounded-xl px-3 py-2.5" style={{ background: "var(--bg3)", color: "var(--text2)" }}>
           <div className="shrink-0">{tip.icon}</div>
           <div>
-            <p className="text-sm font-bold" style={{ color: "var(--text)" }}>{tip.label}</p>
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-bold" style={{ color: "var(--text)" }}>{tip.label}</p>
+              {tip.badge && (
+                <span className="text-white text-[0.55rem] font-bold px-1.5 py-0.5 rounded-full uppercase" style={{ background: "#e53e3e" }}>
+                  {tip.badge}
+                </span>
+              )}
+            </div>
             <p className="text-xs" style={{ color: "var(--text2)" }}>{tip.desc}</p>
           </div>
         </div>
