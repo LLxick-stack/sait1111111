@@ -28,7 +28,7 @@ function getKeyClass(state: LetterState | undefined): string {
 
 export default function Keyboard({ letterStates, onLetter, onDelete, onEnter }: KeyboardProps) {
   return (
-    <div className="flex flex-col gap-2 w-full max-w-lg px-1">
+    <div className="flex flex-col gap-1.5 w-full max-w-lg px-1">
       {ROWS.map((row, rowIdx) => (
         <div key={rowIdx} className="flex justify-center gap-1.5">
           {row.map((key) => {
@@ -37,7 +37,8 @@ export default function Keyboard({ letterStates, onLetter, onDelete, onEnter }: 
                 <button
                   key="enter"
                   onClick={onEnter}
-                  className="h-[58px] px-1 min-w-[62px] bg-[#818384] border border-[#818384] text-white text-sm font-bold rounded-lg uppercase cursor-pointer hover:opacity-90 active:scale-95 transition-all flex items-center justify-center"
+                  className="px-1 min-w-[52px] bg-[#818384] border border-[#818384] text-white text-sm font-bold rounded-lg uppercase cursor-pointer hover:opacity-90 active:scale-95 transition-all flex items-center justify-center"
+                  style={{ height: "var(--key-height)" }}
                 >
                   ввод
                 </button>
@@ -48,9 +49,10 @@ export default function Keyboard({ letterStates, onLetter, onDelete, onEnter }: 
                 <button
                   key="del"
                   onClick={onDelete}
-                  className="h-[58px] px-1 min-w-[50px] bg-[#818384] border border-[#818384] text-white font-bold rounded-lg uppercase cursor-pointer hover:opacity-90 active:scale-95 transition-all flex items-center justify-center"
+                  className="px-1 min-w-[42px] bg-[#818384] border border-[#818384] text-white font-bold rounded-lg uppercase cursor-pointer hover:opacity-90 active:scale-95 transition-all flex items-center justify-center"
+                  style={{ height: "var(--key-height)" }}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/>
                     <line x1="18" y1="9" x2="12" y2="15"/>
                     <line x1="12" y1="9" x2="18" y2="15"/>
@@ -62,7 +64,8 @@ export default function Keyboard({ letterStates, onLetter, onDelete, onEnter }: 
               <button
                 key={key}
                 onClick={() => onLetter(key)}
-                className={`h-[58px] flex-1 max-w-[42px] text-base font-bold rounded-lg border cursor-pointer active:scale-95 transition-all flex items-center justify-center ${getKeyClass(letterStates[key])}`}
+                className={`flex-1 max-w-[42px] text-base font-bold rounded-lg border cursor-pointer active:scale-95 transition-all flex items-center justify-center ${getKeyClass(letterStates[key])}`}
+                style={{ height: "var(--key-height)" }}
               >
                 {key.toUpperCase()}
               </button>

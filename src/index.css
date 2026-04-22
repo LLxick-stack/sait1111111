@@ -12,7 +12,7 @@
 html, body {
   width: 100%;
   height: 100%;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 body {
@@ -21,16 +21,43 @@ body {
   background-color: #121213;
   color: white;
   overscroll-behavior: none;
-  /* Fit content to screen */
-  min-height: 100dvh;
-  min-height: 100vh;
+  height: 100dvh;
+  height: 100vh;
 }
 
 #root {
-  min-height: 100dvh;
-  min-height: 100vh;
+  height: 100dvh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+}
+
+/* Adaptive tile size based on viewport height */
+:root {
+  --tile-size: min(3.5rem, 9vw, 8vh);
+  --key-height: min(3.5rem, 7vh);
+}
+
+.tile {
+  width: var(--tile-size);
+  height: var(--tile-size);
+  font-size: calc(var(--tile-size) * 0.45);
+}
+
+/* Compact layout for short screens */
+@media (max-height: 650px) {
+  :root {
+    --tile-size: min(2.8rem, 8vw, 7vh);
+    --key-height: min(2.8rem, 6vh);
+  }
+}
+
+@media (max-height: 500px) {
+  :root {
+    --tile-size: min(2.2rem, 7vw, 6vh);
+    --key-height: min(2.4rem, 5vh);
+  }
 }
 
 /* Pop animation when typing a letter */

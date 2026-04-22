@@ -294,7 +294,7 @@ export default function App() {
   void _timerRef;
 
   return (
-    <div className="min-h-screen bg-[#121213] flex flex-col items-center text-white select-none touch-manipulation">
+    <div className="h-[100dvh] h-screen bg-[#121213] flex flex-col items-center text-white select-none touch-manipulation overflow-hidden">
       {loading && <LoadingScreen onDone={handleLoadingDone} />}
 
       <Header
@@ -303,7 +303,7 @@ export default function App() {
         onSettings={() => setShowSettings(true)}
       />
 
-      <main className="flex flex-col items-center gap-5 pt-6 pb-4 flex-1 w-full max-w-lg px-2">
+      <main className="flex flex-col items-center gap-2 pt-2 pb-2 flex-1 w-full max-w-lg px-2 justify-between overflow-hidden">
         <GameBoard
           guesses={guesses}
           currentInput={currentInput}
