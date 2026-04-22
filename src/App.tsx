@@ -51,6 +51,11 @@ interface YaSDK {
     canReview: () => Promise<{ value: boolean }>;
     requestReview: () => Promise<void>;
   };
+  features: {
+    LoadingAPI?: {
+      ready: () => void;
+    };
+  };
   getLeaderboards: () => Promise<YaLeaderboards>;
 }
 
@@ -79,16 +84,35 @@ export interface GuessRow {
 const WORD_LENGTH = 5;
 const MAX_GUESSES = 6;
 
-function initYandexSDK() {
+function initYandexSDK(onReady: () => void) {
   if (typeof window !== "undefined" && window.YaGames) {
     window.YaGames.init()
       .then((sdk) => {
         window.ysdk = sdk;
-        // Get player language
         const lang = sdk.environment.i18n.lang;
         console.log("Yandex SDK initialized, lang:", lang);
+        sdk.features.LoadingAPI?.ready();
+        // Show fullscreen ad immediately after SDK init
+        sdk.adv.showFullscreenAdv({
+          callbacks: {
+            onOpen: () => { console.log("Реклама при запуске открыта."); },
+            onClose: (wasShown) => {
+              console.log(wasShown ? "Реклама показана и закрыта." : "Реклама не была показана.");
+              onReady();
+            },
+            onError: (error) => {
+              console.log("Ошибка показа рекламы при запуске.", error);
+              onReady();
+            },
+          },
+        });
       })
-      .catch(() => { console.warn("Yandex SDK not available"); });
+      .catch(() => {
+        console.warn("Yandex SDK not available");
+        onReady();
+      });
+  } else {
+    onReady();
   }
 }
 
@@ -164,7 +188,8 @@ export default function App() {
   const audio = useAudio(audioSettings);
 
   const handleLoadingDone = useCallback(() => {
-    const showFirstVisit = () => {
+    const openGame = () => {
+      setLoading(false);
       const visited = localStorage.getItem("wordle_visited");
       if (!visited) {
         setInteractiveHowToPlay(true);
@@ -172,30 +197,7 @@ export default function App() {
         localStorage.setItem("wordle_visited", "1");
       }
     };
-
-    // Show fullscreen ad first, then reveal the game
-    if (window.ysdk) {
-      window.ysdk.adv.showFullscreenAdv({
-        callbacks: {
-          onOpen: () => {
-            console.log("Реклама при запуске открыта.");
-          },
-          onClose: (wasShown) => {
-            console.log(wasShown ? "Реклама показана и закрыта." : "Реклама не была показана.");
-            setLoading(false);
-            showFirstVisit();
-          },
-          onError: (error) => {
-            console.log("Ошибка показа рекламы при запуске.", error);
-            setLoading(false);
-            showFirstVisit();
-          },
-        },
-      });
-    } else {
-      setLoading(false);
-      showFirstVisit();
-    }
+    initYandexSDK(openGame);
   }, []);
 
   // Apply theme
@@ -239,7 +241,7 @@ export default function App() {
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  useEffect(() => { initYandexSDK(); }, []);
+  useEffect(() => { /* SDK init happens in handleLoadingDone */ }, []);
 
   const evaluateGuess = useCallback(
     (guess: string): { char: string; state: LetterState }[] => {
