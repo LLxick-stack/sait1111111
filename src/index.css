@@ -12,10 +12,16 @@
   --key-text:         #ffffff;
   --tile-border-empty:  #3a3a3c;
   --tile-border-active: #999;
-  --tile-size:   min(3.5rem, 11vw, 9vh);
-  --key-height:  min(3.2rem, 5.5vh);
-  --key-gap:     min(6px, 1vw);
-  --key-font:    clamp(0.65rem, 2.5vw, 0.9rem);
+
+  /* Header ~50px, hint btn ~28px, paddings ~16px, board gaps ~25px, kb gaps ~8px */
+  /* Available for board+kb = 100dvh - 127px                                      */
+  /* board = 6*tile + 5*4px, kb = 3*key + 2*4px                                  */
+  /* tile = (avail * 0.55) / 6,  key = (avail * 0.35) / 3                        */
+  --avail:       calc(100dvh - 127px);
+  --tile-size:   min(3.5rem, 11vw, calc(var(--avail) * 0.55 / 6));
+  --key-height:  min(3.2rem, calc(var(--avail) * 0.38 / 3));
+  --key-gap:     min(5px, 1vw);
+  --key-font:    clamp(0.6rem, 2.2vw, 0.85rem);
 }
 
 [data-theme="light"] {
@@ -29,32 +35,6 @@
   --key-text:         #1a1a1b;
   --tile-border-empty:  #d3d6da;
   --tile-border-active: #878a8c;
-}
-
-@media (max-height: 750px) {
-  :root {
-    --tile-size:   min(3rem, 10vw, 8vh);
-    --key-height:  min(2.8rem, 5vh);
-    --key-gap:     min(4px, 0.8vw);
-  }
-}
-
-@media (max-height: 650px) {
-  :root {
-    --tile-size:   min(2.5rem, 9vw, 7vh);
-    --key-height:  min(2.4rem, 4.5vh);
-    --key-gap:     min(3px, 0.6vw);
-    --key-font:    clamp(0.55rem, 2vw, 0.75rem);
-  }
-}
-
-@media (max-height: 500px) {
-  :root {
-    --tile-size:   min(2rem, 8vw, 6vh);
-    --key-height:  min(2rem, 4vh);
-    --key-gap:     2px;
-    --key-font:    0.6rem;
-  }
 }
 
 * {
