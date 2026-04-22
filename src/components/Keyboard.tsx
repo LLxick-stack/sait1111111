@@ -22,19 +22,32 @@ function getKeyStyle(state: LetterState | undefined): React.CSSProperties {
   }
 }
 
+const baseBtn: React.CSSProperties = {
+  height: "var(--key-height)",
+  fontSize: "calc(var(--key-height) * 0.38)",
+  border: "1px solid",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontWeight: "bold",
+  borderRadius: "6px",
+  cursor: "pointer",
+  transition: "opacity 0.1s",
+  userSelect: "none",
+};
+
 export default function Keyboard({ letterStates, onLetter, onDelete, onEnter }: KeyboardProps) {
   return (
-    <div className="w-full px-1" style={{ display: "flex", flexDirection: "column", gap: "var(--key-gap)" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--key-gap)", width: "100%", padding: "0 4px" }}>
       {ROWS.map((row, rowIdx) => (
-        <div key={rowIdx} style={{ display: "flex", justifyContent: "center", gap: "var(--key-gap)" }}>
+        <div key={rowIdx} style={{ display: "flex", gap: "var(--key-gap)", width: "100%" }}>
           {row.map((key) => {
             if (key === "enter") {
               return (
                 <button
                   key="enter"
                   onClick={onEnter}
-                  className="font-bold rounded-lg uppercase cursor-pointer active:scale-95 transition-all flex items-center justify-center"
-                  style={{ height: "var(--key-height)", fontSize: "var(--key-font)", flex: "1.6", border: "1px solid", ...getKeyStyle(undefined) }}
+                  style={{ ...baseBtn, flex: "1.6", fontSize: "calc(var(--key-height) * 0.3)", textTransform: "uppercase", ...getKeyStyle(undefined) }}
                 >
                   ввод
                 </button>
@@ -45,10 +58,9 @@ export default function Keyboard({ letterStates, onLetter, onDelete, onEnter }: 
                 <button
                   key="del"
                   onClick={onDelete}
-                  className="font-bold rounded-lg uppercase cursor-pointer active:scale-95 transition-all flex items-center justify-center"
-                  style={{ height: "var(--key-height)", flex: "1.4", border: "1px solid", ...getKeyStyle(undefined) }}
+                  style={{ ...baseBtn, flex: "1.4", ...getKeyStyle(undefined) }}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg xmlns="http://www.w3.org/2000/svg" style={{ width: "calc(var(--key-height) * 0.45)", height: "calc(var(--key-height) * 0.45)" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/>
                     <line x1="18" y1="9" x2="12" y2="15"/>
                     <line x1="12" y1="9" x2="18" y2="15"/>
@@ -60,8 +72,7 @@ export default function Keyboard({ letterStates, onLetter, onDelete, onEnter }: 
               <button
                 key={key}
                 onClick={() => onLetter(key)}
-                className="font-bold rounded-lg border cursor-pointer active:scale-95 transition-all flex items-center justify-center"
-                style={{ height: "var(--key-height)", fontSize: "var(--key-font)", flex: "1", border: "1px solid", ...getKeyStyle(letterStates[key]) }}
+                style={{ ...baseBtn, flex: "1", textTransform: "uppercase", ...getKeyStyle(letterStates[key]) }}
               >
                 {key.toUpperCase()}
               </button>
