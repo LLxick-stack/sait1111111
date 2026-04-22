@@ -409,14 +409,11 @@ export default function App() {
           {gameStatus === "playing" && (
             <button
               onClick={handleHint}
-              className="shrink-0 flex flex-col items-center justify-center gap-1 rounded-xl font-bold transition-all active:scale-95 text-gray-300"
-              style={{ background: "var(--bg3)", padding: "8px 6px" }}
+              className="shrink-0 flex items-center justify-center rounded-xl font-bold transition-all active:scale-95 text-gray-300"
+              style={{ background: "var(--bg3)", padding: "6px 8px", fontSize: "0.65rem", lineHeight: 1.3 }}
               title="Подсказка за рекламу"
             >
-              <span style={{ fontSize: "1.2rem" }}>💡</span>
-              <span style={{ writingMode: "vertical-rl", textOrientation: "mixed", fontSize: "0.6rem", lineHeight: 1.2 }}>
-                Подсказка
-              </span>
+              Под-<br/>сказ-<br/>ка
             </button>
           )}
         </div>

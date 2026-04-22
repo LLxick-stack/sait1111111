@@ -25,9 +25,10 @@ export default function LoadingScreen({ onDone }: LoadingScreenProps) {
 
   return (
     <div
-      className={`fixed inset-0 bg-[#121213] flex flex-col items-center justify-center z-[100] transition-opacity duration-400 ${
+      className={`fixed inset-0 flex flex-col items-center justify-center z-[100] transition-opacity duration-400 ${
         fadeOut ? "opacity-0 pointer-events-none" : "opacity-100"
       }`}
+      style={{ background: "#f9f9f9" }}
     >
       <div className="flex gap-2 mb-8">
         {["Р", "У", "С", "В", "Д"].map((letter, i) => {
@@ -56,11 +57,11 @@ export default function LoadingScreen({ onDone }: LoadingScreenProps) {
       </div>
 
       <div className="flex flex-col items-center gap-3 mt-8">
-        <p className="text-gray-400 font-black tracking-widest uppercase" style={{ fontSize: "clamp(2rem, 8vw, 3.5rem)" }}>Загрузка</p>
-        <div className="w-56 h-1.5 bg-[#3a3a3c] rounded-full overflow-hidden">
+        <p className="font-black tracking-widest uppercase" style={{ fontSize: "clamp(2rem, 8vw, 3.5rem)", color: "#1a1a1b" }}>Загрузка</p>
+        <div className="w-56 h-1.5 rounded-full overflow-hidden" style={{ background: "#d3d6da" }}>
           <div
-            className="h-full bg-[#538d4e] rounded-full transition-all duration-300 ease-out"
-            style={{ width: `${progress}%` }}
+            className="h-full rounded-full transition-all duration-300 ease-out"
+            style={{ width: `${progress}%`, background: "#538d4e" }}
           />
         </div>
       </div>
