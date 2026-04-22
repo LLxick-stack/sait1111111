@@ -6,11 +6,13 @@ interface HeaderProps {
 
 export default function Header({ onHowToPlay, onNewGame, onSettings }: HeaderProps) {
   return (
-    <header className="w-full max-w-lg border-b border-gray-700 flex items-center px-4 py-3">
+    <header className="w-full max-w-lg flex items-center px-4 py-3"
+      style={{ borderBottom: "1px solid var(--border)" }}>
       <div className="w-16 flex justify-start">
         <button
           onClick={onHowToPlay}
-          className="text-gray-400 hover:text-white transition-colors p-1"
+          className="transition-colors p-1"
+          style={{ color: "var(--text2)" }}
           title="Как играть"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -21,14 +23,16 @@ export default function Header({ onHowToPlay, onNewGame, onSettings }: HeaderPro
         </button>
       </div>
 
-      <h1 className="flex-1 text-base font-black tracking-tight text-white uppercase text-center leading-tight">
+      <h1 className="flex-1 text-base font-black tracking-tight uppercase text-center leading-tight"
+        style={{ color: "var(--text)" }}>
         Развитие<br/>словарного запаса
       </h1>
 
       <div className="w-16 flex justify-end items-center gap-1">
         <button
           onClick={onSettings}
-          className="text-gray-400 hover:text-white transition-colors p-1"
+          className="transition-colors p-1"
+          style={{ color: "var(--text2)" }}
           title="Настройки"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -38,7 +42,8 @@ export default function Header({ onHowToPlay, onNewGame, onSettings }: HeaderPro
         </button>
         <button
           onClick={onNewGame}
-          className="text-gray-400 hover:text-white transition-colors p-1"
+          className="transition-colors p-1"
+          style={{ color: "var(--text2)" }}
           title="Новая игра"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

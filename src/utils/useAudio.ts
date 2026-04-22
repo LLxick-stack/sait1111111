@@ -3,6 +3,7 @@ import { useRef, useEffect, useCallback } from "react";
 export interface AudioSettings {
   soundEnabled: boolean;
   musicEnabled: boolean;
+  lightTheme: boolean;
 }
 
 // Melody notes: frequencies in Hz (simple pentatonic loop)

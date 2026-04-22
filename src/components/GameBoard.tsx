@@ -22,7 +22,16 @@ function getColorClass(state: LetterState): string {
     case "correct":  return "border-[#538d4e] bg-[#538d4e] text-white";
     case "present":  return "border-[#b59f3b] bg-[#b59f3b] text-white";
     case "absent":   return "border-[#3a3a3c] bg-[#3a3a3c] text-white";
-    default:         return "border-gray-700 bg-transparent text-white";
+    default:         return "";
+  }
+}
+
+function getColorStyle(state: LetterState): React.CSSProperties {
+  switch (state) {
+    case "correct": return { background: "#538d4e", borderColor: "#538d4e", color: "#fff" };
+    case "present": return { background: "#b59f3b", borderColor: "#b59f3b", color: "#fff" };
+    case "absent":  return { background: "#3a3a3c", borderColor: "#3a3a3c", color: "#fff" };
+    default:        return { background: "transparent", borderColor: "var(--tile-border-empty)", color: "var(--text)" };
   }
 }
 
@@ -54,9 +63,10 @@ function RevealTile({ char, state, delay }: RevealTileProps) {
   return (
     <div
       ref={ref}
-      className="flex items-center justify-center font-bold uppercase border-2 rounded border-[#565758] bg-transparent text-white"
+      className="flex items-center justify-center font-bold uppercase border-2 rounded border-[#565758] bg-transparent"
       style={{
         ...tileStyle,
+        color: "var(--text)",
         animation: `flipReveal 0.6s ease forwards`,
         animationDelay: `${delay}s`,
       }}
@@ -80,7 +90,7 @@ export default function GameBoard({
           isRevealRow ? (
             <RevealTile key={j} char={letter.char} state={letter.state} delay={j * 0.3} />
           ) : (
-            <div key={j} className={`flex items-center justify-center font-bold uppercase border-2 rounded ${getColorClass(letter.state)}`} style={tileStyle}>
+            <div key={j} className="flex items-center justify-center font-bold uppercase border-2 rounded" style={{ ...tileStyle, ...getColorStyle(letter.state) }}>
               {letter.char}
             </div>
           )
@@ -100,11 +110,15 @@ export default function GameBoard({
           return (
             <div
               key={j}
-              className={`flex items-center justify-center font-bold uppercase border-2 rounded transition-all duration-75
-                ${hasChar ? "border-gray-400 bg-transparent text-white"
-                  : hint ? "border-[#538d4e] bg-[#538d4e] text-white"
-                  : "border-gray-700 bg-transparent text-white"}`}
-              style={{ ...tileStyle, ...(hasChar ? { animation: "popIn 0.08s ease-out forwards" } : {}) }}
+              className="flex items-center justify-center font-bold uppercase border-2 rounded transition-all duration-75"
+              style={{
+                ...tileStyle,
+                ...(hasChar
+                  ? { borderColor: "var(--tile-border-active)", background: "transparent", color: "var(--text)", animation: "popIn 0.08s ease-out forwards" }
+                  : hint
+                  ? { borderColor: "#538d4e", background: "#538d4e", color: "#fff" }
+                  : { borderColor: "var(--tile-border-empty)", background: "transparent", color: "var(--text)" })
+              }}
             >
               {char || (hint ? hint.toUpperCase() : "")}
             </div>
@@ -121,7 +135,7 @@ export default function GameBoard({
         {Array(wordLength).fill(null).map((_, j) => {
           const hint = revealedHints[j];
           return (
-            <div key={j} className={`flex items-center justify-center border-2 rounded font-bold uppercase ${hint ? "border-[#538d4e] bg-[#538d4e] text-white" : "border-gray-700 bg-transparent text-white"}`} style={tileStyle}>
+            <div key={j} className="flex items-center justify-center border-2 rounded font-bold uppercase" style={{ ...tileStyle, ...(hint ? { borderColor: "#538d4e", background: "#538d4e", color: "#fff" } : { borderColor: "var(--tile-border-empty)", background: "transparent", color: "var(--text)" }) }}>
               {hint ? hint.toUpperCase() : ""}
             </div>
           );

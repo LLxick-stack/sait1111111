@@ -66,25 +66,68 @@ function loadSettings(): AudioSettings {
     const raw = localStorage.getItem("wordle_settings");
     if (raw) return JSON.parse(raw) as AudioSettings;
   } catch { /* ignore */ }
-  return { soundEnabled: true, musicEnabled: false };
+  return { soundEnabled: true, musicEnabled: false, lightTheme: true };
+}
+
+interface SavedGame {
+  targetWord: string;
+  guesses: GuessRow[];
+  currentInput: string;
+  gameStatus: "playing" | "won" | "lost";
+  letterStates: Record<string, LetterState>;
+  revealedHints: Record<number, string>;
+  finishedGame: { word: string; guessCount: number; status: "won" | "lost" } | null;
+  savedAt: number;
+}
+
+const SAVE_KEY = "wordle_game_state";
+const SAVE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+function saveGame(state: SavedGame) {
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify({ ...state, savedAt: Date.now() }));
+  } catch { /* ignore */ }
+}
+
+function loadGame(): SavedGame | null {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return null;
+    const saved: SavedGame = JSON.parse(raw);
+    // Discard saves older than 24h
+    if (Date.now() - saved.savedAt > SAVE_TTL) {
+      localStorage.removeItem(SAVE_KEY);
+      return null;
+    }
+    return saved;
+  } catch { /* ignore */ }
+  return null;
+}
+
+function clearSave() {
+  localStorage.removeItem(SAVE_KEY);
 }
 
 export default function App() {
   const [loading, setLoading] = useState(true);
-  const [targetWord, setTargetWord] = useState<string>(() => getRandomWord());
-  const [guesses, setGuesses] = useState<GuessRow[]>([]);
-  const [currentInput, setCurrentInput] = useState<string>("");
-  const [gameStatus, setGameStatus] = useState<"playing" | "won" | "lost">("playing");
+
+  // Restore saved game or start fresh
+  const savedGame = loadGame();
+
+  const [targetWord, setTargetWord] = useState<string>(() => savedGame?.targetWord ?? getRandomWord());
+  const [guesses, setGuesses] = useState<GuessRow[]>(() => savedGame?.guesses ?? []);
+  const [currentInput, setCurrentInput] = useState<string>(() => savedGame?.currentInput ?? "");
+  const [gameStatus, setGameStatus] = useState<"playing" | "won" | "lost">(() => savedGame?.gameStatus ?? "playing");
   const [shake, setShake] = useState(false);
   const [showHowToPlay, setShowHowToPlay] = useState(false);
   const [interactiveHowToPlay, setInteractiveHowToPlay] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [letterStates, setLetterStates] = useState<Record<string, LetterState>>({});
+  const [letterStates, setLetterStates] = useState<Record<string, LetterState>>(() => savedGame?.letterStates ?? {});
   const [revealingRow, setRevealingRow] = useState<number>(-1);
   const [isRevealing, setIsRevealing] = useState(false);
-  const [revealedHints, setRevealedHints] = useState<Record<number, string>>({});
-  const [finishedGame, setFinishedGame] = useState<{ word: string; guessCount: number; status: "won" | "lost" } | null>(null);
+  const [revealedHints, setRevealedHints] = useState<Record<number, string>>(() => savedGame?.revealedHints ?? {});
+  const [finishedGame, setFinishedGame] = useState<{ word: string; guessCount: number; status: "won" | "lost" } | null>(() => savedGame?.finishedGame ?? null);
   const [audioSettings, setAudioSettings] = useState<AudioSettings>(loadSettings);
   const _timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const audio = useAudio(audioSettings);
@@ -99,7 +142,10 @@ export default function App() {
     }
   }, []);
 
-  // Disable right-click context menu and text selection
+  // Apply theme
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", audioSettings.lightTheme ? "light" : "dark");
+  }, [audioSettings.lightTheme]);
   useEffect(() => {
     const noContext = (e: MouseEvent) => e.preventDefault();
     const noSelect = (e: Event) => e.preventDefault();
@@ -110,6 +156,21 @@ export default function App() {
       document.removeEventListener("selectstart", noSelect);
     };
   }, []);
+
+  // Auto-save game state whenever it changes
+  useEffect(() => {
+    if (loading) return;
+    saveGame({
+      targetWord,
+      guesses,
+      currentInput,
+      gameStatus,
+      letterStates,
+      revealedHints,
+      finishedGame,
+      savedAt: Date.now(),
+    });
+  }, [loading, targetWord, guesses, currentInput, gameStatus, letterStates, revealedHints, finishedGame]);
 
   const [tooSmall, setTooSmall] = useState(false);
 
@@ -261,6 +322,7 @@ export default function App() {
   }, [handleEnter, handleDelete, handleLetter, showModal, showHowToPlay, showSettings]);
 
   const startNewGame = useCallback(() => {
+    clearSave();
     setTargetWord(getRandomWord());
     setGuesses([]);
     setCurrentInput("");
@@ -305,7 +367,8 @@ export default function App() {
   void _timerRef;
 
   return (
-    <div className="h-[100dvh] h-screen bg-[#121213] flex flex-col items-center text-white select-none touch-manipulation overflow-hidden">
+    <div className="h-[100dvh] h-screen flex flex-col items-center select-none touch-manipulation overflow-hidden"
+      style={{ background: "var(--bg)", color: "var(--text)" }}>
       {loading && <LoadingScreen onDone={handleLoadingDone} />}
 
       {tooSmall && (
