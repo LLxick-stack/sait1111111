@@ -2,37 +2,50 @@
 
 /* ── Theme variables ─────────────────────────────────────── */
 :root, [data-theme="dark"] {
-  --bg:        #121213;
-  --bg2:       #1a1a1b;
-  --bg3:       #252526;
-  --border:    #3a3a3c;
-  --text:      #ffffff;
-  --text2:     #818384;
-  --key-bg:    #818384;
-  --key-text:  #ffffff;
-  --tile-border-empty: #3a3a3c;
+  --bg:               #121213;
+  --bg2:              #1a1a1b;
+  --bg3:              #252526;
+  --border:           #3a3a3c;
+  --text:             #ffffff;
+  --text2:            #818384;
+  --key-bg:           #818384;
+  --key-text:         #ffffff;
+  --tile-border-empty:  #3a3a3c;
   --tile-border-active: #999;
+  --tile-size: min(3.5rem, 9vw, 8vh);
+  --key-height: min(3.5rem, 7vh);
 }
 
 [data-theme="light"] {
-  --bg:        #f9f9f9;
-  --bg2:       #ffffff;
-  --bg3:       #ededed;
-  --border:    #d3d6da;
-  --text:      #1a1a1b;
-  --text2:     #787c7e;
-  --key-bg:    #d3d6da;
-  --key-text:  #1a1a1b;
-  --tile-border-empty: #d3d6da;
+  --bg:               #f9f9f9;
+  --bg2:              #ffffff;
+  --bg3:              #ededed;
+  --border:           #d3d6da;
+  --text:             #1a1a1b;
+  --text2:            #787c7e;
+  --key-bg:           #d3d6da;
+  --key-text:         #1a1a1b;
+  --tile-border-empty:  #d3d6da;
   --tile-border-active: #878a8c;
 }
 
-* {
+@media (max-height: 650px) {
+  :root {
+    --tile-size: min(2.8rem, 8vw, 7vh);
+    --key-height: min(2.8rem, 6vh);
+  }
+}
+
+@media (max-height: 500px) {
+  :root {
+    --tile-size: min(2.2rem, 7vw, 6vh);
+    --key-height: min(2.4rem, 5vh);
+  }
+}
 
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
-  /* Disable text selection globally */
   -webkit-user-select: none;
   -moz-user-select: none;
   user-select: none;
@@ -62,45 +75,18 @@ body {
   overflow: hidden;
 }
 
-/* Adaptive tile size based on viewport height */
-:root {
-  --tile-size: min(3.5rem, 9vw, 8vh);
-  --key-height: min(3.5rem, 7vh);
-}
-
-.tile {
-  width: var(--tile-size);
-  height: var(--tile-size);
-  font-size: calc(var(--tile-size) * 0.45);
-}
-
-/* Compact layout for short screens */
-@media (max-height: 650px) {
-  :root {
-    --tile-size: min(2.8rem, 8vw, 7vh);
-    --key-height: min(2.8rem, 6vh);
-  }
-}
-
-@media (max-height: 500px) {
-  :root {
-    --tile-size: min(2.2rem, 7vw, 6vh);
-    --key-height: min(2.4rem, 5vh);
-  }
-}
-
 /* Pop animation when typing a letter */
 @keyframes popIn {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.12); }
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.12); }
   100% { transform: scale(1); }
 }
 
 /* Shake animation for invalid word */
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 50%, 90% { transform: translateX(-5px); }
-  30%, 70% { transform: translateX(5px); }
+  0%, 100%       { transform: translateX(0); }
+  10%, 50%, 90%  { transform: translateX(-5px); }
+  30%, 70%       { transform: translateX(5px); }
 }
 
 .animate-shake {
@@ -109,52 +95,27 @@ body {
 
 /* Flip reveal animation for tiles */
 @keyframes flipReveal {
-  0% {
-    transform: rotateX(0deg);
-  }
-  49.9% {
-    transform: rotateX(-90deg);
-  }
-  50% {
-    transform: rotateX(-90deg);
-  }
-  100% {
-    transform: rotateX(0deg);
-  }
+  0%    { transform: rotateX(0deg); }
+  49.9% { transform: rotateX(-90deg); }
+  50%   { transform: rotateX(-90deg); }
+  100%  { transform: rotateX(0deg); }
 }
 
-/* Color appears at the halfway point of the flip */
-@keyframes colorReveal {
-  0%, 49.9% {
-    background-color: transparent;
-    border-color: #565758;
-  }
-  50%, 100% {
-    /* color is set via inline style */
-  }
-}
-
-/* Fade in for modals and toasts */
+/* Fade in for modals */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-8px) scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .animate-fade-in {
   animation: fadeIn 0.2s ease-out forwards;
 }
 
-/* Bounce animation for win */
+/* Bounce animation for win modal */
 @keyframes bounceIn {
-  0% { transform: scale(0.8); opacity: 0; }
-  60% { transform: scale(1.05); opacity: 1; }
-  80% { transform: scale(0.97); }
+  0%   { transform: scale(0.8); opacity: 0; }
+  60%  { transform: scale(1.05); opacity: 1; }
+  80%  { transform: scale(0.97); }
   100% { transform: scale(1); }
 }
 
@@ -162,27 +123,15 @@ body {
   animation: bounceIn 0.4s ease-out forwards;
 }
 
-/* Prevent text selection on keyboard */
 button {
   user-select: none;
   -webkit-user-select: none;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 4px;
-}
-::-webkit-scrollbar-track {
-  background: #1a1a1b;
-}
-::-webkit-scrollbar-thumb {
-  background: #3a3a3c;
-  border-radius: 2px;
-}
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-/* Touch improvements */
 @media (hover: none) {
-  button:active {
-    opacity: 0.8;
-  }
+  button:active { opacity: 0.8; }
 }
